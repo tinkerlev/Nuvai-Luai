@@ -12,13 +12,9 @@ from flask_limiter.util import get_remote_address
 from src.nuvai.utils.logger import get_logger
 import re
 
-# Load config and extract secret key
-def get_config():
-    return {
-        "JWT_SECRET": os.getenv("JWT_SECRET"),
-        "DATABASE_URL": os.getenv("DATABASE_URL"),
-        "NUVAI_ENV": os.getenv("NUVAI_ENV", "production"),
-    }
+
+config = get_config()
+SECRET_KEY = config.get("JWT_SECRET")
 
 # Validate SECRET_KEY existence
 if not SECRET_KEY:
