@@ -4,7 +4,7 @@ import os
 import psycopg2
 from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 from psycopg2 import sql
-from backend.src.nuvai.utils.logger import get_logger
+from src.nuvai.utils.logger import get_logger
 
 logger = get_logger("db_utils")
 
