@@ -1,6 +1,6 @@
 # README.md
 
-## 🔐 Welcome to Nuvai – AI-Powered Secure Code Scanner
+## 🔐 Welcome to Nuvai-Luai AI-Powered Secure Code Scanner
 ![CI Status](https://github.com/tinkerlev/nuvai/actions/workflows/ci.yml/badge.svg)
 
 **Where AI meets precision, with the rigor of real-world penetration testing.**
