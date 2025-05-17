@@ -70,7 +70,7 @@ def get_db():
 # === Initialize DB schema ===
 def init_db():
     try:
-        from backend.src.nuvai.models import early_access  # Import triggers table creation
+        from src.nuvai.models import early_access
         Base.metadata.create_all(bind=engine)
         logger.info("📦 Database schema created.")
     except Exception as e:
