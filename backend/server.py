@@ -172,6 +172,5 @@ if __name__ == "__main__":
     app.run(
         host="0.0.0.0",
         port=API_PORT,
-        ssl_context=ssl_context,
-        debug=True  # ❗ Remove for production
+        ssl_context=ssl_context
     )
