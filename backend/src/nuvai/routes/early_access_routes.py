@@ -1,9 +1,9 @@
 from flask import Blueprint, request, jsonify
 from datetime import datetime, date
-from backend.src.nuvai.utils.logger import get_logger
-from backend.src.utils.sanitize import sanitize_email, sanitize_text
-from backend.src.nuvai.models.early_access import EarlyAccessEmail
-from backend.src.nuvai.core.db import db_session
+from src.nuvai.utils.logger import get_logger
+from src.utils.sanitize import sanitize_email, sanitize_text
+from src.nuvai.models.early_access import EarlyAccessEmail
+from src.nuvai.core.db import db_session
 
 logger = get_logger(__name__)
 early_access_blueprint = Blueprint("early_access", __name__)
