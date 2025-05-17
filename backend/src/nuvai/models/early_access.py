@@ -1,6 +1,6 @@
 from sqlalchemy import Column, Integer, String, Date, UniqueConstraint
 from sqlalchemy.orm import validates
-from backend.src.nuvai.core.db import Base
+from src.nuvai.core.db import Base
 import re
 from datetime import date
 
