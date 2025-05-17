@@ -13,3 +13,4 @@ pyJWT>=x.x.x
 openai>=1.14.3
 psycopg2-binary>=x.x.x
 redis>=x.x.x
+cryptography>=x.x.x
