@@ -1,18 +1,4 @@
-# File: backend/src/utils/email_utils.py
-
-"""
-Description:
-Handles all outgoing email operations for Nuvai, including securely sending
-password reset links with enhanced monitoring, encryption, and usage control.
-
-Security Compliance:
-- ISO/IEC 27001: environment-based secrets, no hardcoded keys
-- OWASP: email enumeration prevention, no PII in logs
-- NIST 800-53: TLS required, integrity + replay protection via token TTL
-- Includes S/MIME support (optional)
-- Token reuse prevention via Redis cache
-- Analytics hooks for future dashboards
-"""
+# File: email_utils.py
 
 import os
 import smtplib
@@ -24,7 +10,7 @@ from urllib.parse import quote
 from dotenv import load_dotenv
 from cryptography.hazmat.primitives.serialization import load_pem_private_key
 from cryptography.hazmat.backends import default_backend
-from backend.src.nuvai.utils.logger import get_logger
+from src.nuvai.utils.logger import get_logger
 
 # Load environment variables
 load_dotenv()
