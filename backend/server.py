@@ -155,7 +155,11 @@ def create_app():
 if __name__ == "__main__":
     init_db()
     app = create_app()
-    
+
+    if os.getenv("RENDER", "false").lower() == "true":
+        logger.info(f"Nuvai API running in HTTP mode behind Render proxy")
+        app.run(host="0.0.0.0", port=API_PORT)
+    else:
     ssl_cert = os.getenv("SSL_CERT_PATH")
     ssl_key = os.getenv("SSL_KEY_PATH")
 
