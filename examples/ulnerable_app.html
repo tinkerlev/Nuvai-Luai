@@ -1,0 +1,95 @@
+<!-- File: vulnerable_app.html -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GovConnect - Book Your Appointment</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(to right, #e0f7fa, #f1f8e9);
+      margin: 0;
+      padding: 2em;
+      color: #333;
+    }
+    .container {
+      max-width: 600px;
+      margin: auto;
+      background: #fff;
+      padding: 2em;
+      box-shadow: 0 0 15px rgba(0,0,0,0.1);
+      border-radius: 8px;
+    }
+    h2 {
+      color: #00796b;
+      text-align: center;
+    }
+    input, textarea {
+      width: 100%;
+      padding: 0.7em;
+      margin: 0.5em 0;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-size: 1em;
+    }
+    label {
+      font-weight: bold;
+    }
+    button {
+      background-color: #00796b;
+      color: white;
+      padding: 0.75em 1.5em;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      margin-top: 1em;
+    }
+    button:hover {
+      background-color: #004d40;
+    }
+    #result {
+      margin-top: 2em;
+      padding: 1em;
+      background-color: #fbe9e7;
+      border-left: 5px solid #d84315;
+    }
+  </style>
+  <script>
+    // Embedded script with inline user input injection (Reflected XSS)
+    function showConfirmation() {
+      const fullName = document.getElementById("name").value;
+      const notes = document.getElementById("notes").value;
+      document.getElementById("result").innerHTML =
+        `<strong>Appointment confirmed for:</strong> ${fullName}<br><em>${notes}</em>`; // XSS risk
+    }
+
+    // Insecure token exposure in console
+    const apiToken = "html-token-prod-12345";
+    console.log("[DEBUG] API token:", apiToken); // Sensitive info leak
+  </script>
+</head>
+<body>
+  <div class="container">
+    <h2>GovConnect – Book Your Appointment</h2>
+    <form action="/submit" method="POST">
+      <label for="name">Full Name</label>
+      <input type="text" id="name" name="name" placeholder="Jane Doe">
+
+      <label for="notes">Notes or Special Requests</label>
+      <textarea id="notes" name="notes" placeholder="e.g., need accessibility support"></textarea>
+
+      <label for="id_file">Upload ID (PDF or Image)</label>
+      <input type="file" name="id_file" id="id_file">
+
+      <button type="submit" onclick="showConfirmation(); return false;">Submit Booking</button>
+    </form>
+
+    <div id="result"></div>
+  </div>
+
+  <!-- Internal debug note: Remove before production -->
+  <!-- /var/log/govconnect-debug.log -->
+</body>
+</html>

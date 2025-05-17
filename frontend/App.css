@@ -1,0 +1,34 @@
+/* Tailwind CSS directives are correctly included */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+@plugin "daisyui";
+@plugin "daisyui" {
+  themes: all;
+}
+
+@layer base {
+  /* Custom base styles */
+  html {
+    scroll-behavior: smooth;
+  }
+  body {
+    @apply bg-base-100 text-base-content;
+  }
+}
+
+/* Make sure daisyUI themes are being applied */
+[data-theme] {
+  transition: all 0.2s ease;
+}
+
+/* Additional styles for the theme toggle dropdown */
+.dropdown-content {
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+/* Ensure theme buttons look good */
+.theme-btn-grid {
+  grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+}
