@@ -2,6 +2,7 @@
 
 import sys
 import os
+print("JWT_SECRET:", os.getenv("JWT_SECRET"))
 import uuid
 from flask import Flask, request, jsonify
 from flask_cors import CORS
