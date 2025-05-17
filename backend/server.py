@@ -8,14 +8,14 @@ from flask_cors import CORS
 from dotenv import load_dotenv
 from werkzeug.utils import secure_filename
 
-from backend.src.nuvai.routes.auth_routes import auth_blueprint
-from backend.src.nuvai.routes.reset_password_secure import reset_blueprint
-from backend.config import get_config, validate_config
-from backend.src.nuvai import scan_code
-from backend.src.nuvai.utils import get_language
-from backend.src.nuvai.utils.logger import get_logger
-from backend.src.nuvai.core.db import init_db
-from backend.src.nuvai.routes.early_access_routes import early_access_blueprint
+from src.nuvai.routes.auth_routes import auth_blueprint
+from src.nuvai.routes.reset_password_secure import reset_blueprint
+from config import get_config, validate_config
+from src.nuvai import scan_code
+from src.nuvai.utils import get_language
+from src.nuvai.utils.logger import get_logger
+from src.nuvai.core.db import init_db
+from src.nuvai.routes.early_access_routes import early_access_blueprint
 
 
 logger = get_logger(__name__)
