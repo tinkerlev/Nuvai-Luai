@@ -1,20 +1,5 @@
 # File: get_language.py
 
-"""
-Description:
-Language detection utility for Nuvai.
-
-This module provides a secure and extensible function to detect the programming
-language of an uploaded code file. The detection is based primarily on file
-extension, with fallback patterns in the future.
-
-Security Compliance:
-- Avoids guessing based on dangerous heuristics
-- Does not execute or parse code
-- ISO/IEC 27001: Secure handling of external input
-- OWASP: No reliance on user-controlled execution paths
-"""
-
 from typing import Optional
 
 
