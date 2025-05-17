@@ -18,3 +18,4 @@ wheel>=0.42.0
 SQLAlchemy>=x.x.x
 pyJWT>=x.x.x
 openai>=1.14.3
+psycopg2-binary>=x.x.x
