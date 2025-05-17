@@ -160,21 +160,20 @@ if __name__ == "__main__":
         logger.info(f"Nuvai API running in HTTP mode behind Render proxy")
         app.run(host="0.0.0.0", port=API_PORT)
     else:
-    ssl_cert = os.getenv("SSL_CERT_PATH")
-    ssl_key = os.getenv("SSL_KEY_PATH")
+        ssl_cert = os.getenv("SSL_CERT_PATH")
+        ssl_key = os.getenv("SSL_KEY_PATH")
 
-    
-    if not ssl_cert or not ssl_key:
-        raise RuntimeError("❌")
+        if not ssl_cert or not ssl_key:
+            raise RuntimeError("❌")
 
-    if not os.path.exists(ssl_cert) or not os.path.exists(ssl_key):
-        raise FileNotFoundError("❌ SSL certificate or key file not found")
+        if not os.path.exists(ssl_cert) or not os.path.exists(ssl_key):
+            raise FileNotFoundError("❌ SSL certificate or key file not found")
 
-    ssl_context = (ssl_cert, ssl_key)
+        ssl_context = (ssl_cert, ssl_key)
 
-    logger.info(f"Nuvai API starting on port {API_PORT} with HTTPS")
-    app.run(
-        host="0.0.0.0",
-        port=API_PORT,
-        ssl_context=ssl_context
-    )
+        logger.info(f"Nuvai API starting on port {API_PORT} with HTTPS")
+        app.run(
+            host="0.0.0.0",
+            port=API_PORT,
+            ssl_context=ssl_context
+        )
