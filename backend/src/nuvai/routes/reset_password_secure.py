@@ -9,7 +9,7 @@ from config import get_config
 from markupsafe import escape
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
-from backend.src.nuvai.utils.logger import get_logger
+from src.nuvai.utils.logger import get_logger
 import re
 
 # Load config and extract secret key
