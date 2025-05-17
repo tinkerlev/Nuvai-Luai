@@ -6,8 +6,8 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import declarative_base
 from werkzeug.security import generate_password_hash, check_password_hash
-from backend.src.nuvai.core.db import Base, db_session
-from backend.src.nuvai.utils.logger import get_logger
+from src.nuvai.core.db import Base, db_session
+from src.nuvai.utils.logger import get_logger
 
 logger = get_logger("UserModel")
 
