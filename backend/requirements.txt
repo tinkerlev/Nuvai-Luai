@@ -1,21 +1,15 @@
 # requirements.txt
 
-# Core backend dependencies
 flask==3.0.0
 flask-cors==3.0.10
 python-dotenv==1.0.1
-
-# Development and Testing
 pytest==8.1.1
 pytest-cov==5.0.0
-
-# Production server (for deployment)
 gunicorn==21.2.0
-
-# Build and Packaging utilities (safe installation)
 setuptools>=68.0.0
 wheel>=0.42.0
 SQLAlchemy>=x.x.x
 pyJWT>=x.x.x
 openai>=1.14.3
 psycopg2-binary>=x.x.x
+redis>=x.x.x
