@@ -5,7 +5,7 @@ import jwt
 import datetime
 from jwt import ExpiredSignatureError, InvalidTokenError
 from dotenv import load_dotenv
-from backend.src.nuvai.utils.logger import get_logger
+from src.nuvai.utils.logger import get_logger
 
 load_dotenv()
 logger = get_logger(__name__)
