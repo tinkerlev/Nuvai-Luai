@@ -11,7 +11,7 @@ load_dotenv()
 logger = get_logger(__name__)
 
 # Load secret key securely from environment
-JWT_SECRET = os.getenv("JWT_SECRET")
+JWT_SECRET = os.getenv("NUVAI_SECRET")
 JWT_ALGORITHM = "HS256"
 JWT_EXPIRATION_HOURS = int(os.getenv("JWT_EXPIRATION_HOURS", 2))
 
