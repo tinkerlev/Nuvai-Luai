@@ -1,23 +1,3 @@
-# File: logger.py
-
-"""
-Description:
-This module provides secure, structured, and environment-aware logging for the Nuvai backend.
-
-Security Compliance:
-- ISO/IEC 27001: Log retention, confidentiality, access control
-- NIST 800-53: AU-2, AU-6, AU-9, AU-12 compliance
-- OWASP: Avoids logging sensitive data (e.g., passwords, tokens)
-
-Features:
-- Uses Python's built-in logging with RotatingFileHandler
-- Supports console + file logging
-- Redacts sensitive fields before logging
-- Includes correlation IDs if available
-- Can be extended for SIEM integration or remote log shipping
-- Logs include UTC timestamp, level, message, and metadata
-"""
-
 import logging
 import os
 from logging.handlers import RotatingFileHandler
