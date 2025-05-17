@@ -7,8 +7,7 @@ from sqlalchemy.orm import declarative_base, sessionmaker, scoped_session
 
 # === Load environment variables securely ===
 ROOT_DIR = Path(__file__).resolve().parent.parent.parent.parent
-ENV_PATH = ROOT_DIR / ".env"
-load_dotenv(dotenv_path=ENV_PATH)
+load_dotenv()
 
 # === Set environment mode ===
 ENVIRONMENT = os.getenv("ENVIRONMENT", "production").lower()
