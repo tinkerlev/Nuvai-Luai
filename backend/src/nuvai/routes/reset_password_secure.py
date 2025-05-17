@@ -3,9 +3,9 @@
 from flask import Blueprint, request, jsonify
 from itsdangerous import URLSafeTimedSerializer, BadSignature, SignatureExpired
 from werkzeug.security import generate_password_hash
-from backend.src.nuvai.models.user import User
-from backend.src.nuvai.utils.email_utils import send_reset_email
-from backend.config import get_config
+from src.nuvai.models.user import User
+from src.nuvai.utils.email_utils import send_reset_email
+from config import get_config
 from markupsafe import escape
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
