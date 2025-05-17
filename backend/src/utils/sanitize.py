@@ -1,12 +1,3 @@
-"""
-sanitize.py – Input sanitization and validation for Nuvai
-
-Complies with:
-- ISO/IEC 27001 A.12.2.1 (Validation of input data)
-- NIST SP 800-53 SI-10, SC-28 (Sanitization, Encoding, Data Protection)
-- OWASP ASVS 4.0.3 V5 – Input validation
-"""
-
 import re
 import unicodedata
 from html import escape as html_escape
