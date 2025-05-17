@@ -4,10 +4,10 @@ import os
 import jwt
 import datetime
 from flask import Blueprint, request, jsonify
-from backend.src.nuvai.models.user import User 
-from backend.src.nuvai.utils.logger import get_logger
-from backend.src.utils.sanitize import sanitize_email, sanitize_text
-from backend.src.nuvai.utils.token_utils import generate_jwt
+from src.nuvai.models.user import User 
+from src.nuvai.utils.logger import get_logger
+from src.utils.sanitize import sanitize_email, sanitize_text
+from src.nuvai.utils.token_utils import generate_jwt
 
 
 auth_blueprint = Blueprint("auth", __name__)
