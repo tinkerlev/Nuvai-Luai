@@ -47,6 +47,10 @@ def create_app():
     app.register_blueprint(auth_blueprint, url_prefix="/auth")
     app.register_blueprint(early_access_blueprint)
 
+    @app.route('/favicon.ico')
+    def favicon():
+        return send_from_directory(os.path.join(app.root_path, 'static'),
+                                   'favicon.ico', mimetype='image/vnd.microsoft.icon')
     @app.route("/")
     def health_check():
         logger.info("Health check endpoint called")
@@ -155,6 +159,7 @@ def create_app():
 
     return app
 
+    
 if __name__ == "__main__":
     init_db()
     app = create_app()
