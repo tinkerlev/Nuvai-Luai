@@ -49,8 +49,12 @@ def create_app():
 
     @app.route('/favicon.ico')
     def favicon():
-        return send_from_directory(os.path.join(app.root_path, 'static'),
-                                   'favicon.ico', mimetype='image/vnd.microsoft.icon')
+        return send_from_directory(
+            os.path.join(app.root_path, 'frontend', 'public'),
+            'favicon.ico',
+            mimetype='image/vnd.microsoft.icon'
+        )
+
     @app.route("/")
     def health_check():
         logger.info("Health check endpoint called")
