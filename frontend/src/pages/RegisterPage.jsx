@@ -91,6 +91,7 @@ export default function RegisterPage() {
       const csrfToken = localStorage.getItem("csrfToken") || "";
 
       const apiUrl = process.env.REACT_APP_API_URL;
+      console.log("API URL:", apiUrl);
       const res = await fetch(`${apiUrl}/auth/register`, {
 
         method: "POST",
