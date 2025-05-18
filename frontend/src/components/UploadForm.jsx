@@ -152,7 +152,7 @@ export default function UploadForm({ onScan }) {
       formData.append("file", file);
 
       try {
-        const res = await fetch(`${API_URL}/scan`, {
+        const res = await fetch(`${process.env.REACT_APP_API_URL}/auth/scan`, {
           method: "POST",
           headers: {
             Authorization: `Bearer ${token}`
