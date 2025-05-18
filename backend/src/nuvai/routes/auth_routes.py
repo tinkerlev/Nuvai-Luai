@@ -82,6 +82,8 @@ def login():
 
     try:
         data = request.get_json(force=True)
+        logger.debug(f"Raw login data received: {data}")
+
         if not data:
             return jsonify({"message": "Missing JSON"}), 400
 
@@ -91,14 +93,18 @@ def login():
         if not email or not password:
             return jsonify({"message": "Missing email or password"}), 400
 
+        logger.debug(f"Looking for user with email: {email}")
         user = User.get_by_email(email)
-        print("[DEBUG] Received data:", data)
-        if not user or not user.check_password(password):
-            logger.warning(f"Failed login for {email}")
-            return jsonify({"message": "Invalid credentials"}), 401
-        
-        token = generate_jwt(user.id, user.email)
 
+        if not user:
+            logger.warning(f"Login failed – user not found: {email}")
+            return jsonify({"message": "Invalid credentials"}), 401
+
+        if not user.check_password(password):
+            logger.warning(f"Login failed – incorrect password for: {email}")
+            return jsonify({"message": "Invalid credentials"}), 401
+
+        token = generate_jwt(user.id, user.email)
         csrf_token = os.urandom(16).hex()
 
         return jsonify({
@@ -109,4 +115,7 @@ def login():
 
     except Exception as e:
         logger.exception("Unhandled exception during login")
-        return jsonify({"message": "Unexpected error occurred. Please try again later."}), 500
+        return jsonify({
+            "message": "Unexpected error occurred. Please try again later.",
+            "details": str(e)  # ✅ רק בשלב בדיקות
+        }), 500
