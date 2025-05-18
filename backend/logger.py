@@ -56,6 +56,11 @@ def setup_logger(name="nuvai", log_level="INFO"):
 
     return logger
 
-# Example usage
-logger = setup_logger(log_level=os.getenv("NUVAI_LOG_LEVEL", "DEBUG" if os.getenv("RENDER") == "true" else "INFO")
+
+logger = setup_logger(
+    log_level=os.getenv(
+        "NUVAI_LOG_LEVEL",
+        "DEBUG" if os.getenv("RENDER", "false").lower() == "true" else "INFO"
+    )
+)
 logger.debug("Logger initialized.")
