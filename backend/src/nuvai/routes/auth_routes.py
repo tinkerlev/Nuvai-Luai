@@ -76,7 +76,6 @@ def register():
             "trace": traceback.format_exc()
         }), 500
 
-
 @auth_blueprint.route("/login", methods=["POST", "OPTIONS"])
 def login():
     if request.method == "OPTIONS":
