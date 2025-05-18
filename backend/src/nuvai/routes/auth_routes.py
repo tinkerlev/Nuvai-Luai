@@ -30,6 +30,10 @@ def register():
         first_name = sanitize_text(data.get("firstName", ""), max_length=50)
         last_name = sanitize_text(data.get("lastName", ""), max_length=50)
         plan = sanitize_text(data.get("plan", "free"), max_length=20)
+        phone = sanitize_text(data.get("phone", ""), max_length=20)
+        profession = sanitize_text(data.get("profession", ""), max_length=50)
+        company = sanitize_text(data.get("company", ""), max_length=50)
+
 
         if not email or not password:
             return jsonify({"message": "Missing required fields"}), 400
@@ -45,7 +49,10 @@ def register():
             role="user",
             first_name=first_name,
             last_name=last_name,
-            plan=plan
+            plan=plan,
+            phone=phone,
+            profession=profession,
+            company=company
         )
         new_user.set_password(password)
         new_user.save()
