@@ -1,21 +1,4 @@
 # File: logger.py
-
-"""
-Description:
-This module sets up a secure and centralized logging mechanism for the Nuvai system.
-It supports structured logging to both console and file, enforces format consistency,
-and includes filters to avoid logging sensitive data (e.g., passwords, tokens).
-
-Security Features:
-- Filters logs for sensitive keywords (e.g., password, token, secret)
-- Supports log rotation to prevent disk overflow
-- Uses different verbosity levels based on environment (dev/staging/prod)
-- Allows future integration with external logging services (e.g., ELK, Splunk)
-- Custom logger names for better tracing across modules
-- Secure file permissions and optional log signing to meet ISO 27001 traceability
-- Optional email alerts for critical errors (future)
-"""
-
 import logging
 import os
 import re
@@ -74,5 +57,5 @@ def setup_logger(name="nuvai", log_level="INFO"):
     return logger
 
 # Example usage
-logger = setup_logger(log_level=os.getenv("NUVAI_LOG_LEVEL", "INFO"))
+logger = setup_logger(log_level=os.getenv("NUVAI_LOG_LEVEL", "DEBUG" if os.getenv("RENDER") == "true" else "INFO")
 logger.debug("Logger initialized.")
