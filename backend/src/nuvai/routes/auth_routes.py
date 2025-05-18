@@ -117,5 +117,4 @@ def login():
         logger.exception("Unhandled exception during login")
         return jsonify({
             "message": "Unexpected error occurred. Please try again later.",
-            "details": str(e)  # ✅ רק בשלב בדיקות
         }), 500
