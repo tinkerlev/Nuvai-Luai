@@ -31,12 +31,12 @@ def register():
         print("[DEBUG] Email:", email)
 
         password = data.get("password", "")
-        first_name = sanitize_text(data.get("firstName", ""), max_length=50)
-        last_name = sanitize_text(data.get("lastName", ""), max_length=50)
-        plan = sanitize_text(data.get("plan", "free"), max_length=20)
-        phone = sanitize_text(data.get("phone", ""), max_length=20)
-        profession = sanitize_text(data.get("profession", ""), max_length=50)
-        company = sanitize_text(data.get("company", ""), max_length=50)
+        first_name = sanitize_name(data.get("firstName", ""), max_length=50)
+        last_name = sanitize_name(data.get("lastName", ""), max_length=50)
+        plan = sanitize_name(data.get("plan", "free"), max_length=20)
+        phone = sanitize_name(data.get("phone", ""), max_length=20)
+        profession = sanitize_name(data.get("profession", ""), max_length=50)
+        company = sanitize_name(data.get("company", ""), max_length=50)
 
         print("[DEBUG] All fields parsed")
 
