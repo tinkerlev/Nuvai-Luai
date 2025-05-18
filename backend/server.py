@@ -28,6 +28,7 @@ API_PORT = int(os.getenv("API_PORT", 5000))
 MAX_FILE_SIZE = config["MAX_UPLOAD_SIZE_MB"] * 1024 * 1024
 UPLOAD_FOLDER = os.path.join(os.getcwd(), "backend", "tmp")
 ALLOWED_ORIGINS = [origin.strip() for origin in os.getenv("ALLOWED_ORIGINS", "").split(",") if origin.strip()]
+print(f"[DEBUG] ALLOWED_ORIGINS: {ALLOWED_ORIGINS}")
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 def create_app():
