@@ -21,11 +21,15 @@ def register():
 
     try:
         data = request.get_json(force=True)
+        print("[DEBUG] Raw data:", data)
+
         if not data:
             logger.warning("Missing JSON in request")
             return jsonify({"message": "Missing JSON"}), 400
 
         email = sanitize_email(data.get("email", ""))
+        print("[DEBUG] Email:", email)
+
         password = data.get("password", "")
         first_name = sanitize_text(data.get("firstName", ""), max_length=50)
         last_name = sanitize_text(data.get("lastName", ""), max_length=50)
@@ -34,6 +38,7 @@ def register():
         profession = sanitize_text(data.get("profession", ""), max_length=50)
         company = sanitize_text(data.get("company", ""), max_length=50)
 
+        print("[DEBUG] All fields parsed")
 
         if not email or not password:
             return jsonify({"message": "Missing required fields"}), 400
@@ -44,6 +49,7 @@ def register():
             logger.info(f"Duplicate registration attempt: {email}")
             return jsonify({"message": "Email already registered."}), 409
 
+        print("[DEBUG] Creating User object...")
         new_user = User(
             email=email,
             role="user",
