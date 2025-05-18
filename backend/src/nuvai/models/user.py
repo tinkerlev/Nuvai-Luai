@@ -27,6 +27,10 @@ class User(Base):
     first_name = Column(String(50), nullable=True)
     last_name = Column(String(50), nullable=True)
     plan = Column(String(20), default="free", nullable=False)
+    phone = Column(String(20), nullable=True)
+    profession = Column(String(50), nullable=True)
+    company = Column(String(50), nullable=True)
+
     
     is_verified = Column(Boolean, default=False)
     role = Column(SqlEnum(UserRole), default=UserRole.USER, nullable=False)
