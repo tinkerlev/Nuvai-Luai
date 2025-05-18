@@ -30,15 +30,13 @@ def register():
             return jsonify({"message": "Missing JSON"}), 400
 
         email = sanitize_email(data.get("email", ""))
-        print("[DEBUG] Email:", email)
-
+        password = data.get("password", "")  # ✅ הוספה חיונית
         first_name = sanitize_name(data.get("firstName", ""), max_length=50)
         last_name = sanitize_name(data.get("lastName", ""), max_length=50)
         plan = sanitize_text(data.get("plan", "free"), max_length=20)
         phone = sanitize_text(data.get("phone", ""), max_length=20)
         profession = sanitize_text(data.get("profession", ""), max_length=50)
         company = sanitize_text(data.get("company", ""), max_length=50)
-
 
         print("[DEBUG] All fields parsed")
 
@@ -69,9 +67,14 @@ def register():
         return jsonify({"message": "User registered successfully."}), 200
 
     except Exception as e:
-        logger.exception("Unhandled exception during registration")
+        import traceback
+        logger.exception("❌ Unhandled exception during registration")
         print(f"[DEBUG] Exception: {str(e)}")
-        return jsonify({"message": "Internal server error."}), 500
+        return jsonify({
+            "message": "Internal server error.",
+            "details": str(e),
+            "trace": traceback.format_exc()
+        }), 500
 
 
 @auth_blueprint.route("/login", methods=["POST", "OPTIONS"])
@@ -118,5 +121,6 @@ def login():
         print("🔴 Exception during registration:", str(e))
         return jsonify({
             "message": "Unexpected error occurred",
-            "details": str(e)
+            "details": str(e),
+            "traceback": traceback.format_exc()
         }), 500
