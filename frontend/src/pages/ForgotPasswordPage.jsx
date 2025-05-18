@@ -31,7 +31,7 @@ export default function ForgotPasswordPage() {
       const timeout = setTimeout(() => controller.abort(), 40000);
       const csrfToken = localStorage.getItem("csrfToken") || "";
 
-      const res = await fetch(`${API_URL}/auth/forgot-password`, {
+      const res = await fetch(`${API_URL}/forgot-password`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
