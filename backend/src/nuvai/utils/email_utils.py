@@ -50,20 +50,24 @@ except Exception as e:
 def send_reset_email(recipient_email: str, token: str) -> None:
     """
     Sends a password reset email with a single-use token link.
-    Token is stored in Redis with TTL for replay prevention.
+    If Redis is available, token is stored with TTL to prevent replay.
     """
     if not EMAIL_ENABLED:
         logger.warning("Reset email skipped — SMTP not configured.")
         return
 
-    if REDIS_ENABLED and redis_client.get(token):
-        logger.warning(f"Replay attempt blocked for token: {token[:6]}***")
-        raise RuntimeError("Token has already been used or issued.")
+    if REDIS_ENABLED:
+        try:
+            if redis_client.get(token):
+                logger.warning(f"Replay attempt blocked for token: {token[:6]}***")
+                raise RuntimeError("Token has already been used or issued.")
+            redis_client.setex(token, RESET_TOKEN_TTL, "valid")
+        except Exception as e:
+            logger.warning(f"[REDIS] Token validation failed: {e}")
+    else:
+        logger.warning("Redis is not enabled — reset tokens won't be validated for replay.")
 
     try:
-        if REDIS_ENABLED:
-            redis_client.setex(token, RESET_TOKEN_TTL, "valid")
-
         safe_token = quote(token, safe="")
         reset_link = f"{RESET_URL_BASE}?token={safe_token}"
 
@@ -82,7 +86,6 @@ def send_reset_email(recipient_email: str, token: str) -> None:
         msg["To"] = recipient_email
         msg["Message-ID"] = make_msgid()
         msg.set_content(body)
-
         msg.add_header("X-Nuvai-Event", "password_reset")
 
         if SMIME_CERT_PATH and SMIME_KEY_PATH:
