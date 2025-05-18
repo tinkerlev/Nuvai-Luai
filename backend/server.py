@@ -33,6 +33,8 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 def create_app():
     app = Flask(__name__)
     app.config["MAX_CONTENT_LENGTH"] = MAX_FILE_SIZE
+    print(f"[DEBUG] ALLOWED_ORIGINS = {ALLOWED_ORIGINS}")
+    logger.info(f"[DEBUG] ALLOWED_ORIGINS = {ALLOWED_ORIGINS}")
 
     CORS(app,
          origins=ALLOWED_ORIGINS,
