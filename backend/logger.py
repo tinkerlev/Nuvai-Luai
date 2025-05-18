@@ -64,3 +64,5 @@ logger = setup_logger(
     )
 )
 logger.debug("Logger initialized.")
+logger.debug("✅ Logger initialized in DEBUG mode")
+logger.info("ℹ️  Logger level set to: %s", logger.level)
