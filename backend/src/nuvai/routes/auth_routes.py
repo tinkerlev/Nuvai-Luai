@@ -6,7 +6,7 @@ import datetime
 from flask import Blueprint, request, jsonify
 from src.nuvai.models.user import User 
 from src.nuvai.utils.logger import get_logger
-from src.utils.sanitize import sanitize_email, sanitize_text
+from src.nuvai.utils.sanitize import sanitize_email, sanitize_text, sanitize_name
 from src.nuvai.utils.token_utils import generate_jwt
 
 
