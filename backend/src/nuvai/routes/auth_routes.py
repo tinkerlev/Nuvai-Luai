@@ -76,6 +76,7 @@ def login():
             return jsonify({"message": "Missing email or password"}), 400
 
         user = User.get_by_email(email)
+        print("[DEBUG] Received data:", data)
         if not user or not user.check_password(password):
             logger.warning(f"Failed login for {email}")
             return jsonify({"message": "Invalid credentials"}), 401
