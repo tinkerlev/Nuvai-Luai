@@ -115,7 +115,8 @@ def login():
 
     except Exception as e:
         logger.exception("Unhandled exception during login")
+        print("🔴 Exception during registration:", str(e))
         return jsonify({
-            "message": "Unexpected error occurred. Please try again later.",
+            "message": "Unexpected error occurred",
             "details": str(e)
         }), 500
