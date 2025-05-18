@@ -7,7 +7,7 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 from dotenv import load_dotenv
 from werkzeug.utils import secure_filename
-
+from flask import send_from_directory
 from src.nuvai.routes.auth_routes import auth_blueprint
 from src.nuvai.routes.reset_password_secure import reset_blueprint
 from config import get_config, validate_config
