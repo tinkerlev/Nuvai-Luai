@@ -23,9 +23,7 @@ export default function ForgotPasswordPage() {
       setErrorMsg("Please enter a valid email address.");
       return;
     }
-
     setLoading(true);
-
     try {
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), 40000);
