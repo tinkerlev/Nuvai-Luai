@@ -109,7 +109,7 @@ export default function LoginPage() {
 
     try {
       const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 8000);
+      const timeout = setTimeout(() => controller.abort(), 40000);
       const csrfToken = localStorage.getItem("csrfToken") || "";
       const nonce = crypto.randomUUID();
 

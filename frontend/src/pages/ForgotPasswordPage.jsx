@@ -28,7 +28,7 @@ export default function ForgotPasswordPage() {
 
     try {
       const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 10000);
+      const timeout = setTimeout(() => controller.abort(), 40000);
       const csrfToken = localStorage.getItem("csrfToken") || "";
 
       const res = await fetch(`${API_URL}/auth/forgot-password`, {
