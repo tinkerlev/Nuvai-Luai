@@ -62,6 +62,7 @@ def register():
 
     except Exception as e:
         logger.exception("Unhandled exception during registration")
+        print(f"[DEBUG] Exception: {str(e)}")
         return jsonify({"message": "Internal server error."}), 500
 
 
