@@ -22,7 +22,7 @@ export default function GetEarlyAccess() {
   const [loading, setLoading] = useState(false);
 
   const sanitize = (text) =>
-    text.replace(/[<>"']/g, "").normalize("NFKC").trim();
+    text.replace(/[<>"'`;]/g, "").normalize("NFKC").trim();
 
   const handleChange = (e) => {
     setFormData((prev) => ({
@@ -36,14 +36,22 @@ export default function GetEarlyAccess() {
     setMessage("");
     setErrorMsg("");
 
-    if (!formData.firstName || !formData.lastName || !formData.email || !formData.birthDate) {
+    const { firstName, lastName, email, birthDate } = formData;
+    if (!firstName || !lastName || !email || !birthDate) {
       setErrorMsg("Please fill in all required fields.");
       return;
     }
 
-    const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email);
+    const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
     if (!emailValid) {
       setErrorMsg("Invalid email address.");
+      return;
+    }
+
+    const birth = new Date(birthDate);
+    const age = new Date().getFullYear() - birth.getFullYear();
+    if (age < 16) {
+      setErrorMsg("You must be at least 16 years old to sign up.");
       return;
     }
 
@@ -57,10 +65,10 @@ export default function GetEarlyAccess() {
           "X-Requested-With": "XMLHttpRequest",
         },
         body: JSON.stringify({
-          first_name: formData.firstName,
-          last_name: formData.lastName,
-          email: formData.email,
-          birth_date: formData.birthDate,
+          first_name: firstName,
+          last_name: lastName,
+          email: email,
+          birth_date: birthDate,
           location: formData.location,
         }),
       });
@@ -71,7 +79,6 @@ export default function GetEarlyAccess() {
         throw new Error(data.error || "Signup failed.");
       }
 
-      // Unified success message from backend
       setMessage(data.message || "✅ You're on the list! Thank you.");
       setFormData({
         firstName: "",
@@ -155,7 +162,7 @@ export default function GetEarlyAccess() {
               </div>
               <div className="form-control mb-4">
                 <label className="label">
-                  <span className="label-text">Location (Optional)</span>
+                  <span className="label-text">Location </span>
                 </label>
                 <input
                   type="text"
