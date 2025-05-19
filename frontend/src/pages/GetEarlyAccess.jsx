@@ -73,9 +73,21 @@ export default function GetEarlyAccess() {
         }),
       });
 
-      const data = await res.json();
+      let data = {};
+      try {
+        const text = await res.text();
+        data = text ? JSON.parse(text) : {};
+      } catch (err) {
+        console.error("Invalid or empty JSON response");
+        setErrorMsg("Unexpected response from server. Please try again later.");
+        setLoading(false);
+        return;
+      }
+
       if (!res.ok) {
-        throw new Error(data.error || "Signup failed.");
+        setErrorMsg(data.error || "Signup failed.");
+        setLoading(false);
+        return;
       }
 
       setMessage(data.message || "✅ You're on the list! Thank you.");
