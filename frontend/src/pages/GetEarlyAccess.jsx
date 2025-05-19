@@ -74,7 +74,6 @@ export default function GetEarlyAccess() {
       });
 
       const data = await res.json();
-
       if (!res.ok) {
         throw new Error(data.error || "Signup failed.");
       }
