@@ -57,7 +57,7 @@ export default function GetEarlyAccess() {
 
     setLoading(true);
     try {
-      const API_BASE = import.meta.env.REACT_APP_API_BASE_URL;
+      const API_BASE = process.env.REACT_APP_API_BASE_URL;
       const res = await fetch(`${API_BASE}/api/early-access`, {
         method: "POST",
         headers: {
