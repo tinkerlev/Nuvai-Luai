@@ -57,7 +57,7 @@ export default function GetEarlyAccess() {
 
     setLoading(true);
     try {
-      const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
+      const API_BASE = import.meta.env.REACT_APP_API_BASE_URL || "http://localhost:5000";
       const res = await fetch(`${API_BASE}/api/early-access`, {
         method: "POST",
         headers: {
