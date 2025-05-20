@@ -50,7 +50,7 @@ export default function Footer() {
             Have questions? Email us at <a href="mailto:security@Luai.io" className="link link-primary">info@luai.io</a>
           </p>
           <p className="text-xs mt-1">
-            Copyright © {new Date().getFullYear()} - Luai Security Technologies
+            Copyright © {new Date().getFullYear()} Your AI-Powered Security Partner
           </p>
         </div>
       </div>

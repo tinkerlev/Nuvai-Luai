@@ -31,3 +31,7 @@ Thumbs.db
 *.swp
 nuvai-ca/
 nuvai-ca*
+env_check.py
+test_email_send.py
+test_redis_connection.py
+diagnostics.py

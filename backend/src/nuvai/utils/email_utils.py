@@ -11,6 +11,9 @@ from dotenv import load_dotenv
 from cryptography.hazmat.primitives.serialization import load_pem_private_key
 from cryptography.hazmat.backends import default_backend
 from src.nuvai.utils.logger import get_logger
+from src.nuvai.utils.templates.early_access import generate_early_access_email
+from src.nuvai.utils.templates.followup_email import generate_followup_email
+from src.nuvai.utils.templates.launch_email import generate_launch_email
 
 # Load environment variables
 load_dotenv()
@@ -20,7 +23,7 @@ logger = get_logger("EmailUtils")
 # Load config
 SMTP_SERVER = os.getenv("SMTP_SERVER")
 SMTP_PORT = int(os.getenv("SMTP_PORT", 587))
-SMTP_USER = os.getenv("SMTP_USER")
+SMTP_USER = os.getenv("SMTP_USERNAME")
 SMTP_PASSWORD = os.getenv("SMTP_PASSWORD")
 RESET_URL_BASE = os.getenv("RESET_URL_BASE", "https://localhost:5173/reset-password")
 REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379")
@@ -48,10 +51,6 @@ except Exception as e:
 
 
 def send_reset_email(recipient_email: str, token: str) -> None:
-    """
-    Sends a password reset email with a single-use token link.
-    If Redis is available, token is stored with TTL to prevent replay.
-    """
     if not EMAIL_ENABLED:
         logger.warning("Reset email skipped — SMTP not configured.")
         return
@@ -71,13 +70,13 @@ def send_reset_email(recipient_email: str, token: str) -> None:
         safe_token = quote(token, safe="")
         reset_link = f"{RESET_URL_BASE}?token={safe_token}"
 
-        subject = "🔐 Reset Your Nuvai Password"
+        subject = "🔐 Reset Your Luai Password"
         body = (
             f"Hello,\n\n"
             f"We received a request to reset your password. If you initiated this, click below:\n"
             f"{reset_link}\n\n"
             f"If you didn't request this, ignore this email.\n\n"
-            f"- Nuvai Security Team"
+            f"- Luai Security Team"
         )
 
         msg = EmailMessage()
@@ -86,7 +85,7 @@ def send_reset_email(recipient_email: str, token: str) -> None:
         msg["To"] = recipient_email
         msg["Message-ID"] = make_msgid()
         msg.set_content(body)
-        msg.add_header("X-Nuvai-Event", "password_reset")
+        msg.add_header("X-Luai-Event", "password_reset")
 
         if SMIME_CERT_PATH and SMIME_KEY_PATH:
             try:
@@ -111,3 +110,101 @@ def send_reset_email(recipient_email: str, token: str) -> None:
     except Exception as e:
         logger.error(f"Failed to send reset email: {e}")
         raise RuntimeError("Could not send reset email.")
+
+def notify_new_early_access_user(recipient_email: str, first_name: str = "there") -> None:
+    """
+    Called when a new user registers for early access.
+    It fetches the email content from early_access.py and sends the welcome email.
+    """
+    if not EMAIL_ENABLED:
+        logger.warning("Early access email skipped — SMTP not configured.")
+        return
+
+    try:
+        subject, html_body = generate_early_access_email(first_name)
+        plain_text = f"""Hi {first_name},\n\nYou're now part of Luai early access.\nWe'll notify you the moment it's ready.\n\n– The Luai Team"""
+
+        msg = EmailMessage()
+        msg["Subject"] = subject
+        msg["From"] = SENDER_EMAIL
+        msg["To"] = recipient_email
+        msg["Message-ID"] = make_msgid()
+        msg.set_content(plain_text)
+        msg.add_alternative(html_body, subtype="html")
+        msg.add_header("X-Luai-Event", "early_access")
+
+        context = ssl.create_default_context()
+        with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
+            server.starttls(context=context)
+            server.login(SMTP_USER, SMTP_PASSWORD)
+            server.send_message(msg)
+
+        logger.info(f"✅ Early access email sent to {recipient_email[:3]}***")
+
+    except Exception as e:
+        logger.error(f"❌ Failed to send early access email: {e}")
+        raise RuntimeError("Could not send early access email.")
+
+
+def send_followup_email(recipient_email: str, first_name: str) -> None:
+    """
+    Sends the follow-up email to users who signed up for early access but haven't interacted yet.
+    """
+    if not EMAIL_ENABLED:
+        logger.warning("Follow-up email skipped — SMTP not configured.")
+        return
+
+    try:
+        subject, html_body = generate_followup_email(first_name)
+        plain_text = f"""Hi {first_name},\n\nThanks again for signing up for early access to Luai!\nWe're almost ready. Soon you'll be able to scan your code instantly and stay secure with AI-powered analysis.\n\n– The Luai Team"""
+
+        msg = EmailMessage()
+        msg["Subject"] = subject
+        msg["From"] = SENDER_EMAIL
+        msg["To"] = recipient_email
+        msg["Message-ID"] = make_msgid()
+        msg.set_content(plain_text)
+        msg.add_alternative(html_body, subtype="html")
+        msg.add_header("X-Luai-Event", "follow_up")
+
+        context = ssl.create_default_context()
+        with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
+            server.starttls(context=context)
+            server.login(SMTP_USER, SMTP_PASSWORD)
+            server.send_message(msg)
+
+        logger.info(f"📬 Follow-up email sent to {recipient_email[:3]}***")
+
+    except Exception as e:
+        logger.error(f"❌ Failed to send follow-up email: {e}")
+        raise RuntimeError("Could not send follow-up email.")
+
+def send_launch_email(recipient_email: str, first_name: str, invite_link: str):
+    if not EMAIL_ENABLED:
+        logger.warning("Launch email skipped — SMTP not configured.")
+        return
+
+    try:
+        subject, html_body = generate_launch_email(first_name, invite_link)
+        plain_text = f"""Hi {first_name},\n\nLuai is now live! Start scanning your code now using your unique link:\n{invite_link}\n\n– The Luai Team"""
+
+        msg = EmailMessage()
+        msg["Subject"] = subject
+        msg["From"] = SENDER_EMAIL
+        msg["To"] = recipient_email
+        msg["Message-ID"] = make_msgid()
+        msg.set_content(plain_text)
+        msg.add_alternative(html_body, subtype="html")
+        msg.add_header("X-Luai-Event", "launch")
+
+        context = ssl.create_default_context()
+        with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
+            server.starttls(context=context)
+            server.login(SMTP_USER, SMTP_PASSWORD)
+            server.send_message(msg)
+
+        logger.info(f"🚀 Launch email sent to {recipient_email[:3]}***")
+
+    except Exception as e:
+        logger.error(f"❌ Failed to send launch email: {e}")
+        raise RuntimeError("Could not send launch email.")

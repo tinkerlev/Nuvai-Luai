@@ -61,3 +61,32 @@ def verify_jwt(token: str) -> dict:
     except Exception as e:
         logger.exception("Unhandled token verification error")
         raise RuntimeError("Token verification failed") from e
+
+SECRET_KEY = os.getenv("INVITE_SECRET_KEY", "ultra-secure-key")
+INVITE_TOKEN_TTL = int(os.getenv("INVITE_TOKEN_TTL", 7 * 24 * 3600))
+
+if not SECRET_KEY:
+    raise RuntimeError("❌ INVITE_SECRET_KEY is not set in environment variables.")
+
+def generate_invite_token(email: str) -> str:
+    payload = {
+        "email": email,
+        "exp": datetime.datetime.utcnow() + datetime.timedelta(seconds=INVITE_TOKEN_TTL),
+        "scope": "invite_access"
+    }
+    token = jwt.encode(payload, SECRET_KEY, algorithm="HS256")
+    return token
+
+def build_invite_link(email: str) -> str:
+    token = generate_invite_token(email)
+    base_url = os.getenv("INVITE_BASE_URL", "https://luai.io/launch").rstrip("/")
+    return f"{base_url}?token={token}"
+
+def verify_invite_token(token: str) -> str:
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
+        return payload["email"]
+    except jwt.ExpiredSignatureError:
+        raise ValueError("Invite token expired.")
+    except jwt.InvalidTokenError:
+        raise ValueError("Invalid invite token.")
