@@ -15,12 +15,10 @@ from src.nuvai.utils.templates.early_access import generate_early_access_email
 from src.nuvai.utils.templates.followup_email import generate_followup_email
 from src.nuvai.utils.templates.launch_email import generate_launch_email
 
-# Load environment variables
-load_dotenv()
 
+load_dotenv()
 logger = get_logger("EmailUtils")
 
-# Load config
 SMTP_SERVER = os.getenv("SMTP_SERVER")
 SMTP_PORT = int(os.getenv("SMTP_PORT", 587))
 SMTP_USER = os.getenv("SMTP_USERNAME")
@@ -29,14 +27,12 @@ RESET_URL_BASE = os.getenv("RESET_URL_BASE", "https://localhost:5173/reset-passw
 REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379")
 SENDER_EMAIL = os.getenv("MAIL_FROM", SMTP_USER)
 
-# S/MIME optional
 SMIME_CERT_PATH = os.getenv("SMIME_CERT_PATH")
 SMIME_KEY_PATH = os.getenv("SMIME_KEY_PATH")
 SMIME_KEY_PASSWORD = os.getenv("SMIME_KEY_PASSWORD")
 
 RESET_TOKEN_TTL = int(os.getenv("RESET_TOKEN_TTL", 3600))
 
-# Flags
 EMAIL_ENABLED = all([SMTP_SERVER, SMTP_USER, SMTP_PASSWORD])
 if not EMAIL_ENABLED:
     logger.warning("[EMAIL] SMTP configuration incomplete. Email features disabled.")

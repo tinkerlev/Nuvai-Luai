@@ -5,6 +5,7 @@ from src.nuvai.utils.logger import get_logger
 from src.utils.sanitize import sanitize_email, sanitize_text
 from src.nuvai.models.early_access import EarlyAccessEmail
 from src.nuvai.core.db import db_session
+from src.nuvai.utils.email_utils import notify_new_early_access_user
 
 logger = get_logger(__name__)
 early_access_blueprint = Blueprint("early_access", __name__)
@@ -20,7 +21,7 @@ def register_early_access():
         birth_date_raw = data.get("birth_date", "").strip()
         location_raw = data.get("location", "").strip()
 
-        # Required field checks
+
         if not email_raw or not first_name_raw or not last_name_raw or not birth_date_raw:
             return jsonify({"error": "Missing required fields."}), 400
 
@@ -36,13 +37,13 @@ def register_early_access():
         except ValueError as e:
             return jsonify({"error": str(e)}), 400
 
-        # Check for duplicate without disclosing it to the user
+
         existing_entry = db_session.query(EarlyAccessEmail).filter_by(email=email).first()
         if existing_entry:
             logger.info(f"[EarlyAccess] Repeated registration attempt for: {email}")
             return jsonify({"message": "Thank you! You're on the early access list."}), 200
 
-        # Register new user
+
         new_entry = EarlyAccessEmail(
             email=email,
             first_name=first_name,
@@ -53,7 +54,8 @@ def register_early_access():
 
         db_session.add(new_entry)
         db_session.commit()
-
+        notify_new_early_access_user(email, first_name)
+        
         logger.info(f"[EarlyAccess] New early access user registered: {email}")
         return jsonify({"message": "Thank you! You're on the early access list."}), 201
 

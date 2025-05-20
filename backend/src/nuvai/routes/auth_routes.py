@@ -30,7 +30,7 @@ def register():
             return jsonify({"message": "Missing JSON"}), 400
 
         email = sanitize_email(data.get("email", ""))
-        password = data.get("password", "")  # ✅ הוספה חיונית
+        password = data.get("password", "")
         first_name = sanitize_name(data.get("firstName", ""), max_length=50)
         last_name = sanitize_name(data.get("lastName", ""), max_length=50)
         plan = sanitize_text(data.get("plan", "free"), max_length=20)
