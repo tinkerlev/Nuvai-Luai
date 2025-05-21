@@ -42,7 +42,7 @@ def generate_followup_email(first_name: str) -> tuple[str, str]:
         .cta {{
           display: inline-block;
           background: linear-gradient(120deg, #2E3192, #1BAEEA);
-          color: #ffffff;
+          color: white;
           text-decoration: none;
           padding: 14px 28px;
           border-radius: 30px;
@@ -68,7 +68,7 @@ def generate_followup_email(first_name: str) -> tuple[str, str]:
     <body>
       <div class="container">
         <div class="header">
-          <img src="https://luai.io/assets/luai-logo.png" alt="Luai Logo" width="80" height="80" style="border-radius: 50%; background: #fff; margin-bottom: 15px;" />
+          <img src="https://luai.io/assets/Logo-Luai-tr.svg" alt="Luai Logo" width="80" height="80" style="border-radius: 50%; background: #fff; margin-bottom: 15px;" />
           <h1 style="margin:0;">Luai is Almost Ready</h1>
         </div>
         <div class="content">
@@ -89,10 +89,16 @@ def generate_followup_email(first_name: str) -> tuple[str, str]:
           <p>We're putting the final touches on Luai. You’ll get an invite as soon as it’s live. In the meantime, feel free to reply to this email and tell us what security challenges you face – we’re listening.</p>
 
           <p style="text-align:center; margin-top: 30px;">
-            <a href="https://luai.io" class="cta">See What's Coming</a>
+            <a href="https://luai.io" style="display:inline-block;
+                                              background:linear-gradient(120deg, #2E3192, #1BAEEA);
+                                              color:#ffffff;
+                                              text-decoration:none;
+                                              padding:14px 28px;
+                                              border-radius:30px;
+                                              font-weight:bold;
+                                              box-shadow:0 4px 10px rgba(46,49,146,0.2);
+                                              text-align:center;"> See What's Coming</a>
           </p>
-
-          <p style="margin-top:40px;">Talk soon,<br/><strong>The Luai Team</strong></p>
         </div>
         <div class="footer">
           <p>© 2025 Luai – Your AI-Powered Security Partner</p>

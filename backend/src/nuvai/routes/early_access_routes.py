@@ -14,7 +14,6 @@ early_access_blueprint = Blueprint("early_access", __name__)
 def register_early_access():
     try:
         data = request.get_json(force=True)
-
         email_raw = data.get("email", "").strip()
         first_name_raw = data.get("first_name", "").strip()
         last_name_raw = data.get("last_name", "").strip()
@@ -55,7 +54,7 @@ def register_early_access():
         db_session.add(new_entry)
         db_session.commit()
         notify_new_early_access_user(email, first_name)
-        
+
         logger.info(f"[EarlyAccess] New early access user registered: {email}")
         return jsonify({"message": "Thank you! You're on the early access list."}), 201
 

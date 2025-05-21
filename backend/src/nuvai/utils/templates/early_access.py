@@ -44,7 +44,7 @@ def generate_early_access_email(first_name: str) -> tuple[str, str]:
         .cta {{
           display: inline-block;
           background: linear-gradient(120deg, #2E3192, #1BAEEA);
-          color: #ffffff;
+          color: white;
           text-decoration: none;
           padding: 14px 28px;
           border-radius: 30px;
@@ -89,7 +89,7 @@ def generate_early_access_email(first_name: str) -> tuple[str, str]:
       <div class="container">
         <div style='text-align: center; margin: 30px 0;'>
           <div style='display: inline-block; padding: 18px; border-radius: 50%; background: linear-gradient(120deg, #2E3192 0%, #1BAEEA 100%); box-shadow: 0 6px 18px rgba(46,49,146,0.2);'>
-            <img src="https://luai.io/assets/luai-logo.png" alt="Luai Logo" width="80" height="80" style="border-radius: 50%; background: #fff;" />
+            <img src="https://luai.io/assets/Logo-Luai-tr.svg" alt="Luai Logo" width="80" height="80" style="border-radius: 50%; background: #fff;" />
           </div>
         </div>
         <div class="content">
@@ -104,14 +104,22 @@ def generate_early_access_email(first_name: str) -> tuple[str, str]:
               <li>Scan AI- or no-code-generated files safely</li>
             </ul>
           </div>
-          <p>We'll notify you the moment it's ready.</p>
+          <p>We'll notify you the moment it's ready</p>
           <p style="text-align:center;">
-            <a class="cta" href="https://luai.io">Learn More About Luai</a>
+            <a href="https://luai.io" style="display:inline-block;
+                                              background:linear-gradient(120deg, #2E3192, #1BAEEA);
+                                              color:#ffffff;
+                                              text-decoration:none;
+                                              padding:14px 28px;
+                                              border-radius:30px;
+                                              font-weight:bold;
+                                              box-shadow:0 4px 10px rgba(46,49,146,0.2);
+                                              text-align:center;">
+                                              Learn More About Luai</a>
           </p>
-          <p style="margin-top:40px;">– The Luai Team</p>
         </div>
         <div class="footer">
-          <p>© 2025 LUAI – Your AI-Powered Security Partner</p>
+          <p>© 2025 Luai – Your AI-Powered Security Partner</p>
           <p>
             <a href="https://luai.io/privacy" style="color:#2E3192; text-decoration:none;">Privacy</a> |
             <a href="https://luai.io/terms" style="color:#2E3192; text-decoration:none;">Terms</a> |

@@ -135,7 +135,7 @@ def notify_new_early_access_user(recipient_email: str, first_name: str = "there"
             server.login(SMTP_USER, SMTP_PASSWORD)
             server.send_message(msg)
 
-        logger.info(f"✅ Early access email sent to {recipient_email[:3]}***")
+        logger.info(f"Early access email sent to {recipient_email[:3]}***")
 
     except Exception as e:
         logger.error(f"❌ Failed to send early access email: {e}")
@@ -169,7 +169,7 @@ def send_followup_email(recipient_email: str, first_name: str) -> None:
             server.login(SMTP_USER, SMTP_PASSWORD)
             server.send_message(msg)
 
-        logger.info(f"📬 Follow-up email sent to {recipient_email[:3]}***")
+        logger.info(f"Follow-up email sent to {recipient_email[:3]}***")
 
     except Exception as e:
         logger.error(f"❌ Failed to send follow-up email: {e}")
@@ -199,7 +199,7 @@ def send_launch_email(recipient_email: str, first_name: str, invite_link: str):
             server.login(SMTP_USER, SMTP_PASSWORD)
             server.send_message(msg)
 
-        logger.info(f"🚀 Launch email sent to {recipient_email[:3]}***")
+        logger.info(f"Launch email sent to {recipient_email[:3]}***")
 
     except Exception as e:
         logger.error(f"❌ Failed to send launch email: {e}")

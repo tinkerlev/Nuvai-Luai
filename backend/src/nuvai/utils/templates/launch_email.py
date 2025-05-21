@@ -61,7 +61,7 @@ def generate_launch_email(first_name: str, invite_link: str) -> tuple[str, str]:
     <body>
       <div class="container">
         <div class="header">
-          <img src="https://luai.io/assets/luai-logo.png" alt="Luai Logo" width="80" height="80" style="border-radius: 50%; background: #fff; margin-bottom: 15px;" />
+          <img src="https://luai.io/assets/Logo-Luai-tr.svg" alt="Luai Logo" width="80" height="80" style="border-radius: 50%; background: #fff; margin-bottom: 15px;" />
           <h1 style="margin:0;">Luai is Live!</h1>
           <p style="margin-top:10px; font-size:18px;">You're among the first to access it 🎉</p>
         </div>
@@ -72,13 +72,21 @@ def generate_launch_email(first_name: str, invite_link: str) -> tuple[str, str]:
           <p>This is your early access invite. It's unique and designed just for you:</p>
 
           <p style="text-align:center; margin: 30px 0;">
-            <a href="{invite_link}" class="cta">Start Scanning Now</a>
+            <a href="{invite_link}" style="display:inline-block;
+                                              background:linear-gradient(120deg, #2E3192, #1BAEEA);
+                                              color:#ffffff;
+                                              text-decoration:none;
+                                              padding:14px 28px;
+                                              border-radius:30px;
+                                              font-weight:bold;
+                                              box-shadow:0 4px 10px rgba(46,49,146,0.2);
+                                              text-align:center;">
+                                              Start Scanning Now</a>
           </p>
 
           <p>Luai scans your code, detects hidden flaws, and gives you clear, actionable suggestions – all in seconds.</p>
 
-          <p style="margin-top: 30px;">Thank you for being one of the early believers.</p>
-          <p>– The Luai Team</p>
+          <p style="margin-top: 30px;">Thank you for being one of the early believers</p>
         </div>
         <div class="footer">
           <p>© 2025 Luai – Your AI-Powered Security Partner</p>
