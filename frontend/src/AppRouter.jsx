@@ -9,6 +9,7 @@ import HomePage from "./pages/Home";
 import Footer from "./components/Footer";
 import { ThemeToggle } from "./theme/theme-toggle";
 import GetEarlyAccess from './pages/GetEarlyAccess';
+import { SpeedInsights } from "@vercel/speed-insights/react"
 
 export default function AppRouter() {
   return (
