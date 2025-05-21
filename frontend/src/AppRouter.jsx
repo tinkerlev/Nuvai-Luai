@@ -25,8 +25,6 @@ export default function AppRouter() {
             <Route path="/Home" element={<HomePage />} />
             <Route path="/early-access" element={<GetEarlyAccess />} />
             <Route path="/scan" element={<UploadPage />} />
-
-
             <Route
               path="/scan"
               element={
@@ -35,12 +33,12 @@ export default function AppRouter() {
                 </PrivateRoute>
               }
             />
-
             <Route path="*" element={<Navigate to="/Home" replace />} />
           </Routes>
         </div>
         <Footer />
       </div>
+      <SpeedInsights />
     </Router>
   );
 }
