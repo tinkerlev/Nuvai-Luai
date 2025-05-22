@@ -9,7 +9,6 @@ def generate_early_access_email(first_name: str) -> tuple[str, str]:
       <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
       <title>Welcome to Luai</title>
       <style>
-        /* Base styles */
         body {{
           background-color: #f9f9f9;
           font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
@@ -26,7 +25,7 @@ def generate_early_access_email(first_name: str) -> tuple[str, str]:
           box-shadow: 0 4px 24px rgba(0,0,0,0.06);
         }}
         .header {{
-          background: linear-gradient(120deg, #2E3192, #1BAEEA);
+          background: linear-gradient(120deg, #1B1F2A, #646CFF);
           color: #ffffff;
           text-align: center;
           padding: 30px;
@@ -59,38 +58,20 @@ def generate_early_access_email(first_name: str) -> tuple[str, str]:
           border-top: 1px solid #eaeaea;
           padding: 20px;
         }}
-
-        /* Dark mode support (partial) */
         @media (prefers-color-scheme: dark) {{
-          body {{
-            background-color: #1e1e1e;
-            color: #dddddd;
-          }}
-          .container {{
-            background-color: #2a2a2a;
-            box-shadow: 0 4px 24px rgba(255,255,255,0.05);
-          }}
-          .content {{
-            color: #dddddd;
-          }}
-          .feature-box {{
-            background-color: #333e5a;
-            border-left-color: #90caf9;
-          }}
-          .footer {{
-            background-color: #1c1c1c;
-            color: #999999;
-            border-top-color: #333333;
-          }}
+          body {{ background-color: #1e1e1e; color: #dddddd; }}
+          .container {{ background-color: #2a2a2a; }}
+          .feature-box {{ background-color: #333e5a; border-left-color: #90caf9; }}
+          .footer {{ background-color: #1c1c1c; color: #999999; border-top-color: #333333; }}
         }}
       </style>
     </head>
     <body>
       <div class="container">
-        <div style='text-align: center; margin: 30px 0;'>
-          <div style='display: inline-block; padding: 18px; border-radius: 50%; background: linear-gradient(120deg, #2E3192 0%, #1BAEEA 100%); box-shadow: 0 6px 18px rgba(46,49,146,0.2);'>
-            <img src="https://luai.io/assets/Logo-Luai-tr.svg" alt="Luai Logo" width="80" height="80" style="border-radius: 50%; background: #fff;" />
-          </div>
+        <div class="header">
+            <img src="https://luai.io/assets/luai-logo-transparent.png" src="cid:luai_logo" alt="Luai Logo" width="130" height="130" style="border-radius: 50%; background: #fff;" />
+            <h1 style="margin: 20px 0 10px;">Welcome to Luai</h1>
+            <p style="margin: 0;">You’re now officially on the inside! 🎉</p>
         </div>
         <div class="content">
           <p>Hello <strong>{first_name}</strong>,</p>
@@ -104,8 +85,8 @@ def generate_early_access_email(first_name: str) -> tuple[str, str]:
               <li>Scan AI- or no-code-generated files safely</li>
             </ul>
           </div>
-          <p>We'll notify you the moment it's ready</p>
-          <p style="text-align:center;">
+          <p>We'll notify you the moment it's ready.</p>
+          <p style="text-align:center; margin-top: 30px;">
             <a href="https://luai.io" style="display:inline-block;
                                               background:linear-gradient(120deg, #2E3192, #1BAEEA);
                                               color:#ffffff;
@@ -114,8 +95,9 @@ def generate_early_access_email(first_name: str) -> tuple[str, str]:
                                               border-radius:30px;
                                               font-weight:bold;
                                               box-shadow:0 4px 10px rgba(46,49,146,0.2);
-                                              text-align:center;">
-                                              Learn More About Luai</a>
+                                          ">
+              Learn More About Luai
+            </a>
           </p>
         </div>
         <div class="footer">

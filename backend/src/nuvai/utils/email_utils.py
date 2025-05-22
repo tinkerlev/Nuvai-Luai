@@ -4,7 +4,11 @@ import os
 import smtplib
 import ssl
 import redis
+import pathlib
 from email.message import EmailMessage
+from email.mime.multipart import MIMEMultipart
+from email.mime.image import MIMEImage
+from email.mime.text import MIMEText
 from email.utils import make_msgid
 from urllib.parse import quote
 from dotenv import load_dotenv
@@ -108,10 +112,6 @@ def send_reset_email(recipient_email: str, token: str) -> None:
         raise RuntimeError("Could not send reset email.")
 
 def notify_new_early_access_user(recipient_email: str, first_name: str = "there") -> None:
-    """
-    Called when a new user registers for early access.
-    It fetches the email content from early_access.py and sends the welcome email.
-    """
     if not EMAIL_ENABLED:
         logger.warning("Early access email skipped — SMTP not configured.")
         return
@@ -120,21 +120,33 @@ def notify_new_early_access_user(recipient_email: str, first_name: str = "there"
         subject, html_body = generate_early_access_email(first_name)
         plain_text = f"""Hi {first_name},\n\nYou're now part of Luai early access.\nWe'll notify you the moment it's ready.\n\n– The Luai Team"""
 
-        msg = EmailMessage()
-        msg["Subject"] = subject
-        msg["From"] = SENDER_EMAIL
-        msg["To"] = recipient_email
-        msg["Message-ID"] = make_msgid()
-        msg.set_content(plain_text)
-        msg.add_alternative(html_body, subtype="html")
-        msg.add_header("X-Luai-Event", "early_access")
-
+        msg_root = MIMEMultipart('related')
+        msg_root['Subject'] = subject
+        msg_root['From'] = SENDER_EMAIL
+        msg_root['To'] = recipient_email
+        msg_root.add_header("X-Luai-Event", "early_access")
+        msg_alt = MIMEMultipart('alternative')
+        msg_root.attach(msg_alt)
+        msg_alt.attach(MIMEText(plain_text, 'plain'))
+        html_body = html_body.replace(
+            'src="https://luai.io/assets/luai-logo-transparent.png"',
+            'src="cid:luai_logo"'
+        )
+        msg_alt.attach(MIMEText(html_body, 'html'))
+        BASE_DIR = pathlib.Path(__file__).resolve().parents[4]
+        logo_path = BASE_DIR / "assets" / "luai-logo-transparent.png"
+        if not logo_path.exists():
+            raise FileNotFoundError(f"EMAIL Logo not found at: {logo_path}")
+        with open(logo_path, "rb") as img:
+            logo = MIMEImage(img.read(), _subtype="png")
+            logo.add_header('Content-ID', '<luai_logo>')
+            logo.add_header('Content-Disposition', 'inline', filename='logo.png')
+            msg_root.attach(logo)
         context = ssl.create_default_context()
         with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
             server.starttls(context=context)
             server.login(SMTP_USER, SMTP_PASSWORD)
-            server.send_message(msg)
-
+            server.send_message(msg_root)
         logger.info(f"Early access email sent to {recipient_email[:3]}***")
 
     except Exception as e:
@@ -143,64 +155,78 @@ def notify_new_early_access_user(recipient_email: str, first_name: str = "there"
 
 
 def send_followup_email(recipient_email: str, first_name: str) -> None:
-    """
-    Sends the follow-up email to users who signed up for early access but haven't interacted yet.
-    """
     if not EMAIL_ENABLED:
         logger.warning("Follow-up email skipped — SMTP not configured.")
         return
-
     try:
         subject, html_body = generate_followup_email(first_name)
         plain_text = f"""Hi {first_name},\n\nThanks again for signing up for early access to Luai!\nWe're almost ready. Soon you'll be able to scan your code instantly and stay secure with AI-powered analysis.\n\n– The Luai Team"""
-
-        msg = EmailMessage()
-        msg["Subject"] = subject
-        msg["From"] = SENDER_EMAIL
-        msg["To"] = recipient_email
-        msg["Message-ID"] = make_msgid()
-        msg.set_content(plain_text)
-        msg.add_alternative(html_body, subtype="html")
-        msg.add_header("X-Luai-Event", "follow_up")
-
+        msg_root = MIMEMultipart('related')
+        msg_root['Subject'] = subject
+        msg_root['From'] = SENDER_EMAIL
+        msg_root['To'] = recipient_email
+        msg_root.add_header("X-Luai-Event", "follow_up")
+        msg_alt = MIMEMultipart('alternative')
+        msg_root.attach(msg_alt)
+        msg_alt.attach(MIMEText(plain_text, 'plain'))
+        html_body = html_body.replace(
+            'src="https://luai.io/assets/luai-logo-transparent.png"',
+            'src="cid:luai_logo"'
+        )
+        msg_alt.attach(MIMEText(html_body, 'html'))
+        BASE_DIR = pathlib.Path(__file__).resolve().parents[4]
+        logo_path = BASE_DIR / "assets" / "luai-logo-transparent.png"
+        if not logo_path.exists():
+            raise FileNotFoundError(f"EMAIL Logo not found at: {logo_path}")
+        with open(logo_path, "rb") as img:
+            logo = MIMEImage(img.read(), _subtype="png")
+            logo.add_header('Content-ID', '<luai_logo>')
+            logo.add_header('Content-Disposition', 'inline', filename='logo.png')
+            msg_root.attach(logo)
         context = ssl.create_default_context()
         with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
             server.starttls(context=context)
             server.login(SMTP_USER, SMTP_PASSWORD)
-            server.send_message(msg)
-
+            server.send_message(msg_root)
         logger.info(f"Follow-up email sent to {recipient_email[:3]}***")
-
     except Exception as e:
         logger.error(f"❌ Failed to send follow-up email: {e}")
         raise RuntimeError("Could not send follow-up email.")
-
 def send_launch_email(recipient_email: str, first_name: str, invite_link: str):
     if not EMAIL_ENABLED:
         logger.warning("Launch email skipped — SMTP not configured.")
         return
-
     try:
         subject, html_body = generate_launch_email(first_name, invite_link)
         plain_text = f"""Hi {first_name},\n\nLuai is now live! Start scanning your code now using your unique link:\n{invite_link}\n\n– The Luai Team"""
-
-        msg = EmailMessage()
-        msg["Subject"] = subject
-        msg["From"] = SENDER_EMAIL
-        msg["To"] = recipient_email
-        msg["Message-ID"] = make_msgid()
-        msg.set_content(plain_text)
-        msg.add_alternative(html_body, subtype="html")
-        msg.add_header("X-Luai-Event", "launch")
-
+        msg_root = MIMEMultipart('related')
+        msg_root['Subject'] = subject
+        msg_root['From'] = SENDER_EMAIL
+        msg_root['To'] = recipient_email
+        msg_root.add_header("X-Luai-Event", "launch")
+        msg_alt = MIMEMultipart('alternative')
+        msg_root.attach(msg_alt)
+        msg_alt.attach(MIMEText(plain_text, 'plain'))
+        html_body = html_body.replace(
+            'src="https://luai.io/assets/luai-logo-transparent.png"',
+            'src="cid:luai_logo"'
+        )
+        msg_alt.attach(MIMEText(html_body, 'html'))
+        BASE_DIR = pathlib.Path(__file__).resolve().parents[4]
+        logo_path = BASE_DIR / "assets" / "luai-logo-transparent.png"
+        if not logo_path.exists():
+            raise FileNotFoundError(f"EMAIL Logo not found at: {logo_path}")
+        with open(logo_path, "rb") as img:
+            logo = MIMEImage(img.read(), _subtype="png")
+            logo.add_header('Content-ID', '<luai_logo>')
+            logo.add_header('Content-Disposition', 'inline', filename='logo.png')
+            msg_root.attach(logo)
         context = ssl.create_default_context()
         with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
             server.starttls(context=context)
             server.login(SMTP_USER, SMTP_PASSWORD)
-            server.send_message(msg)
-
+            server.send_message(msg_root)
         logger.info(f"Launch email sent to {recipient_email[:3]}***")
-
     except Exception as e:
         logger.error(f"❌ Failed to send launch email: {e}")
         raise RuntimeError("Could not send launch email.")

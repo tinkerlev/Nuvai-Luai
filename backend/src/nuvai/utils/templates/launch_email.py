@@ -25,7 +25,7 @@ def generate_launch_email(first_name: str, invite_link: str) -> tuple[str, str]:
           overflow: hidden;
         }}
         .header {{
-          background: linear-gradient(120deg, #1BAEEA, #2E3192);
+          background: linear-gradient(120deg, #1B1F2A, #646CFF);
           color: white;
           text-align: center;
           padding: 40px 30px;
@@ -61,7 +61,7 @@ def generate_launch_email(first_name: str, invite_link: str) -> tuple[str, str]:
     <body>
       <div class="container">
         <div class="header">
-          <img src="https://luai.io/assets/Logo-Luai-tr.svg" alt="Luai Logo" width="80" height="80" style="border-radius: 50%; background: #fff; margin-bottom: 15px;" />
+            <img src="https://luai.io/assets/luai-logo-transparent.png" src="cid:luai_logo" alt="Luai Logo" width="130" height="130" style="border-radius: 50%; background: #fff;" />
           <h1 style="margin:0;">Luai is Live!</h1>
           <p style="margin-top:10px; font-size:18px;">You're among the first to access it 🎉</p>
         </div>

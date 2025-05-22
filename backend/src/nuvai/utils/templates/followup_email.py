@@ -25,7 +25,7 @@ def generate_followup_email(first_name: str) -> tuple[str, str]:
           box-shadow: 0 4px 24px rgba(0,0,0,0.06);
         }}
         .header {{
-          background: linear-gradient(120deg, #2E3192, #1BAEEA);
+          background: linear-gradient(120deg, #1B1F2A, #646CFF);
           color: #ffffff;
           text-align: center;
           padding: 30px;
@@ -68,7 +68,7 @@ def generate_followup_email(first_name: str) -> tuple[str, str]:
     <body>
       <div class="container">
         <div class="header">
-          <img src="https://luai.io/assets/Logo-Luai-tr.svg" alt="Luai Logo" width="80" height="80" style="border-radius: 50%; background: #fff; margin-bottom: 15px;" />
+            <img src="https://luai.io/assets/luai-logo-transparent.png" src="cid:luai_logo" alt="Luai Logo" width="130" height="130" style="border-radius: 50%; background: #fff;" />
           <h1 style="margin:0;">Luai is Almost Ready</h1>
         </div>
         <div class="content">
