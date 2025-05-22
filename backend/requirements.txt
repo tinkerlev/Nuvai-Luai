@@ -15,4 +15,5 @@ openai>=1.14.3
 psycopg2-binary>=2.9.9
 redis>=5.0.4
 cryptography>=42.0.5
+pip>=25.1.1
 
