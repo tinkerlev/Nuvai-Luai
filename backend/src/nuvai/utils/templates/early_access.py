@@ -94,10 +94,7 @@ def generate_early_access_email(first_name: str) -> tuple[str, str]:
                                               padding:14px 28px;
                                               border-radius:30px;
                                               font-weight:bold;
-                                              box-shadow:0 4px 10px rgba(46,49,146,0.2);
-                                          ">
-              Learn More About Luai
-            </a>
+                                              box-shadow:0 4px 10px rgba(46,49,146,0.2);">Learn More About Luai</a>
           </p>
         </div>
         <div class="footer">
