@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="https://luai.io/assets/logo.svg" alt="Luai Logo" height="80" />
+  <img src="./assets/Logo-Luai-tr.svg" alt="Luai Logo" height="80" />
 
 # Luai – AI-Powered Secure Code Scanner
 
