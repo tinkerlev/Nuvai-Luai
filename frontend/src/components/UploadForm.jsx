@@ -258,40 +258,6 @@ export default function UploadForm({ onScan }) {
           Please wait... scanning in progress.
         </p>
       )}
-
-      {scanResults.length > 0 && (
-        <div className="mt-6 text-sm">
-          <h3 className="text-lg font-semibold mb-2">Scan Results:</h3>
-          {scanResults.map((result, index) => (
-            <div
-              key={index}
-              className="mb-4 p-4 rounded border shadow-sm bg-white"
-            >
-              <p className="font-medium text-gray-800">
-                📝 <strong>{result.fileName}</strong>
-              </p>
-              {result.error ? (
-                <p className="text-red-600 mt-1">❌ Error processing this file.</p>
-              ) : result.vulnerabilities?.length ? (
-                <ul className="list-disc ml-6 text-gray-700 mt-1">
-                  {result.vulnerabilities.map((vuln, i) => (
-                    <li key={i}>
-                      <span className="font-semibold">[{vuln.severity.toUpperCase()}]</span> {vuln.title}
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <p className="text-green-600 mt-1">✅ No vulnerabilities found.</p>
-              )}
-              {result.explanation && (
-                <p className="mt-2 text-gray-600 italic">
-                  💡 <span dangerouslySetInnerHTML={{ __html: result.explanation }}></span>
-                </p>
-              )}
-            </div>
-          ))}
-        </div>
-      )}
     </form>
   );
 }

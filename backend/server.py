@@ -11,6 +11,7 @@ from flask import send_from_directory
 from src.nuvai.routes.auth_routes import auth_blueprint
 from src.nuvai.routes.reset_password_secure import reset_blueprint
 from config import get_config, validate_config
+from src.nuvai.utils.ai_analyzer import analyze_scan_results
 from src.nuvai import scan_code
 from src.nuvai.utils.get_language import get_language
 from src.nuvai.utils.logger import get_logger
@@ -22,7 +23,7 @@ import logging
 logger = get_logger(__name__)
 
 logging.basicConfig(
-    level=logging.INFO,
+    level=logging.WARNING,
     format='[%(asctime)s] [%(levelname)s] %(message)s',
 )
 
@@ -134,7 +135,12 @@ def create_app():
             language = get_language(original_filename, code)
             logger.info(f"Scanning file '{original_filename}' (language: {language})")
             findings = scan_code(code, language)
-            logger.debug("[server.py] Code analyzed as string only – never executed")
+
+            ai_summary = analyze_scan_results({
+                "filename": original_filename,
+                "language": language,
+                "vulnerabilities": findings
+            })
 
             normalized = [{
                 "severity": f.get("severity") or f.get("level", "info").lower(),
@@ -146,7 +152,9 @@ def create_app():
             return {
                 "filename": original_filename,
                 "language": language,
-                "vulnerabilities": normalized
+                "vulnerabilities": normalized,
+                "ai_analysis": ai_summary.get("ai_analysis", ""),
+                "model_used": ai_summary.get("model_used", "")
             }
         
         except UnicodeDecodeError:
