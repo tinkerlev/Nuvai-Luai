@@ -15,21 +15,16 @@ import re
 
 config = get_config()
 SECRET_KEY = config.get("JWT_SECRET")
-
-# Validate SECRET_KEY existence
 if not SECRET_KEY:
     raise EnvironmentError("[SECURITY] Missing JWT_SECRET in environment configuration")
 
-# Setup Blueprint, logger and serializer
 reset_blueprint = Blueprint("reset", __name__)
 serializer = URLSafeTimedSerializer(SECRET_KEY)
 logger = get_logger(__name__)
 
-# Setup rate limiting (5 requests per 15 minutes per IP)
 limiter = Limiter(key_func=get_remote_address)
 limiter.limit("5 per 15 minutes")(reset_blueprint)
 
-# Strong password regex - OWASP + NIST + ISO/IEC 27001 compliant
 PASSWORD_REGEX = re.compile(
     r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)"
     r"(?=.*[!@#$%^&*()_+\-=\[\]{};':\"\\|,.<>/?]).{12,}$"

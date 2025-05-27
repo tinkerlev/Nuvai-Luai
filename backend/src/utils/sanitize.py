@@ -8,7 +8,6 @@ MAX_LENGTH_EMAIL = 120
 MAX_LENGTH_TEXT = 255
 MAX_LENGTH_NAME = 50
 
-# Prevent dangerous characters and XSS-like input
 DISALLOWED_PATTERN = re.compile(r"[<>\"'`;\\(){}\[\]]")
 
 def sanitize_email(email: str) -> str:

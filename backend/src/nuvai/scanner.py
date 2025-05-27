@@ -1,30 +1,5 @@
 # File: scanner.py
 
-"""
-Description:
-This is the central dispatcher module for the Nuvai scanning engine.
-It identifies the programming language of the target file (based on extension and content heuristics),
-imports the appropriate scanning module, and runs a complete analysis using that module.
-
-Security Enhancements:
-- Validates file extension and checks for content-based hints
-- Handles unexpected and malformed content safely
-- Prevents bypasses using misleading extensions (e.g., .txt with JavaScript content)
-- Supports future expansion for advanced content analysis and AI-based detection
-
-Supported Languages:
-- Python (.py)
-- JavaScript (.js)
-- HTML (.html)
-- JSX (.jsx)
-- TypeScript (.ts)
-- PHP (.php)
-- C++ (.cpp)
-
-Returns structured findings, errors, or recommendations for next actions.
-Provides tailored remediation tips based on detected vulnerabilities.
-"""
-
 import os
 import logging
 import re
@@ -64,14 +39,20 @@ def get_language(file_path, code=None):
 
 def scan_code(code, language):
     try:
+        logger.info("[scanner.py] Starting scan_code()")
         code = code.strip()
+        logger.info(f"[scanner.py] Code length: {len(code)}")
+        logger.info(f"[scanner.py] Detected language: {language}")
         if not code or not language:
+            logger.info("[scanner.py] Missing code or language")
             return [{
                 "level": "ERROR",
                 "type": "Missing Input",
                 "message": "Missing source code or language type.",
                 "recommendation": "Please check the input and try again."
             }]
+
+        logger.info(f"[scanner.py] Importing scanner for {language}")
 
         scanner = None
         if language == "python":
@@ -96,14 +77,17 @@ def scan_code(code, language):
             from .typescript_scanner import TypeScriptScanner
             scanner = TypeScriptScanner(code)
         else:
+            logger.warning(f"[scanner.py] Unsupported language: {language}")
             return [{
                 "level": "ERROR",
                 "type": "Unsupported Language",
                 "message": f"The language '{language}' is currently not supported.",
                 "recommendation": "Check for updates or verify file extension."
             }]
+        logger.info(f"[scanner.py] Running checks with {scanner.__class__.__name__}")
 
         findings = scanner.run_all_checks()
+        logger.info(f"[scanner.py] Scan complete – findings: {len(findings)}")
 
         if not findings:
             return [{
@@ -130,7 +114,7 @@ def scan_code(code, language):
         return findings
 
     except ImportError as e:
-        logger.exception("Scanner module import failed")
+        logger.exception("[scanner.py] Unhandled exception during scan")
         return [{
             "level": "ERROR",
             "type": "Scanner Import Failure",

@@ -1,27 +1,3 @@
-"""
-File: typescript_scanner.py
-
-Description:
-This module scans TypeScript source code for security vulnerabilities using pattern-based
-static analysis. It is part of Nuvai's multi-language scanning engine and focuses on
-TypeScript-specific issues such as unsafe typing, insecure API calls, and improper error handling.
-
-Implemented Checks:
-- Dangerous use of eval(), new Function(), setTimeout with string
-- Use of `any` or `as any` (unsafe typing)
-- Unescaped or unsanitized user input into DOM or output
-- Hardcoded credentials or tokens
-- Insecure HTTP requests (fetch, axios)
-- Missing null checks before property access
-- Unhandled promise rejections (then without catch)
-- Insecure use of browser storage
-- Debug/logging statements (console.log, debugger)
-- Insecure assignments to window.location or document.referrer
-- Suspicious comment disclosures (TODO, passwords, debug)
-
-Note: Regex-based scanner. Future improvements may use TypeScript AST parsing.
-"""
-
 import re
 
 class TypeScriptScanner:

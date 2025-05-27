@@ -3,7 +3,7 @@
 import sys
 import os
 import uuid
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 from dotenv import load_dotenv
 from werkzeug.utils import secure_filename
@@ -12,13 +12,19 @@ from src.nuvai.routes.auth_routes import auth_blueprint
 from src.nuvai.routes.reset_password_secure import reset_blueprint
 from config import get_config, validate_config
 from src.nuvai import scan_code
-from src.nuvai.utils import get_language
+from src.nuvai.utils.get_language import get_language
 from src.nuvai.utils.logger import get_logger
 from src.nuvai.core.db import init_db
 from src.nuvai.routes.early_access_routes import early_access_blueprint
+import logging
 
 
 logger = get_logger(__name__)
+
+logging.basicConfig(
+    level=logging.INFO,
+    format='[%(asctime)s] [%(levelname)s] %(message)s',
+)
 
 load_dotenv()
 validate_config()
@@ -128,6 +134,7 @@ def create_app():
             language = get_language(original_filename, code)
             logger.info(f"Scanning file '{original_filename}' (language: {language})")
             findings = scan_code(code, language)
+            logger.debug("[server.py] Code analyzed as string only – never executed")
 
             normalized = [{
                 "severity": f.get("severity") or f.get("level", "info").lower(),
@@ -135,13 +142,13 @@ def create_app():
                 "description": f.get("description") or f.get("message", "No description provided."),
                 "recommendation": f.get("recommendation", "No recommendation available.")
             } for f in findings]
-
+            
             return {
                 "filename": original_filename,
                 "language": language,
                 "vulnerabilities": normalized
             }
-
+        
         except UnicodeDecodeError:
             logger.warning(f"Invalid encoding in file '{original_filename}'")
             return {
