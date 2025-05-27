@@ -55,7 +55,7 @@ export default function App() {
               </div>
               
               <h1 className="text-3xl font-bold mb-2 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-                Nuvai Code Scanner
+                Luai Code Scanner
               </h1>
               <p className="text-base-content/70 mb-6">
                 Upload your code files for instant security analysis and vulnerability detection

@@ -1,22 +1,4 @@
 # File: scanner_controller.py
-
-"""
-Description:
-Secure and intelligent controller for routing uploaded code to Nuvai's static analysis engine.
-This advanced version includes strict input validation, AI-assisted language detection,
-and defense mechanisms against malformed, overly large, or potentially malicious input.
-
-Features:
-- Detects blocked attack patterns (e.g., eval, base64, dangerous shell commands)
-- Validates MIME type and ensures plain text format
-- Scans only supported languages
-- Provides graceful error messages for non-technical users
-- Differentiates between "hard limit" rejection and "soft warning" suggestions
-- Logs critical errors for backend observability
-
-Used by: Flask backend (server.py)
-"""
-
 import logging
 import re
 import mimetypes
