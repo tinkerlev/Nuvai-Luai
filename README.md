@@ -18,22 +18,6 @@
 
 ---
 
-🤖 Powered by AI (Luai Engine)
-
-Luai uses an embedded AI-assisted detection layer to analyze:
-
-Ambiguous or obfuscated logic in code
-
-Code copied/generated from Copilot, ChatGPT, or StackOverflow
-
-Patterns that traditional regex rules might miss
-
-The AI layer does not run the uploaded code, but uses embedding-based matching, entropy models, and natural language hints in comments to:
-
-✅ Spot insecure assumptions✅ Flag overly permissive logic✅ Correlate user-generated patterns with known exploits
-
-🔧 Pluggable: Supports future LLM backends or private language models.
-
 📌 What Does Luai Scan?
 
 Luai performs static code analysis (SAST) — it inspects code without executing it to identify potential security issues, bad patterns, and weak practices.
@@ -46,72 +30,33 @@ Code uploaded via drag-and-drop or API
 
 🧠 How It Works:
 
-Detects the programming language by extension and content
+1. Detects the programming language by extension and content
 
-Loads the appropriate secure scanner module (e.g., jsx_scanner.py)
+2. Loads the appropriate secure scanner module (e.g., jsx_scanner.py)
 
-Parses the content line-by-line using regex and static rules
+3. Parses the content line-by-line using regex and static rules
 
-Flags patterns like:
+4. Flags patterns like:
 
-eval() / exec() / innerHTML
+    *   eval() / exec() / innerHTML
 
-Hardcoded secrets, unsafe storage, insecure API calls
+    *   Hardcoded secrets, unsafe storage, insecure API calls
 
-AI-generated risky constructs (e.g., Copilot patterns)
+    *   AI-generated risky constructs (e.g., Copilot patterns)
 
-Outputs detailed report (JSON/UI) — never executes the code
+5. Outputs detailed report (JSON/UI) — never executes the code
 
 🔐 Security Principles:
 
-Code is treated as plain text only
+*   Code is treated as plain text only
 
-No use of eval(), exec(), or subprocess() in the engine
+*   **No use of eval(), exec(), or **subprocess() in the engine
 
-Uploaded files are scanned and immediately deleted
+*   Uploaded files are scanned and immediately deleted
 
-Sensitive keywords (token, secret, password) are redacted in logs
+*   Sensitive keywords (token, secret, password) are redacted in logs
 
-Code audit checker: check_no_execution.py verifies backend safety
-
-✨ Highlights
-
-Feature
-
-Description
-
-🔐 Zero Execution
-
-Code is parsed, analyzed — never run
-
-🧠 AI-Aware Engine
-
-Recognizes patterns from GPT/Copilot/StackOverflow
-
-📚 Multi-Language Support
-
-Python, JavaScript, HTML, JSX, PHP, TypeScript, C++
-
-📄 Smart Reports
-
-Output in JSON, TXT, HTML, PDF
-
-🧪 Audit Tool
-
-check_no_execution.py ensures your backend is clean
-
-📦 Modular Scanner Design
-
-Add rules per language easily
-
-🌐 Modern UI
-
-React + Tailwind interface for file uploads and results
-
-🛡 Compliance Ready
-
-ISO/IEC 27001, OWASP Top 10, NIST SSDF aligned
-
+*   Code audit checker: check_no_execution.py verifies backend safety
 
 ----
 
@@ -169,8 +114,8 @@ Use our sandbox to:
 
 <table>
   <tr>
-    <td><img src="./assets/ChatGPTImage.png" alt="File Upload UI" width="400"/></td>
-    <td><img src="https://luai.io/assets/ui-results.png" alt="Scan Results UI" width="400"/></td>
+    <td><img src="https://luai.io/assets/ui-results.png" alt="File Upload UI" width="400"/></td>
+    <td><img src="./assets/ChatGPTImage.png" alt="Scan Results UI" width="400"/></td>
   </tr>
   <tr>
     <td align="center">File Upload View</td>
