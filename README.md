@@ -1,201 +1,194 @@
-# README.md
+<div align="center">
+  <img src="https://luai.io/assets/logo.svg" alt="Luai Logo" height="80" />
 
-## 🔐 Welcome to Nuvai-Luai AI-Powered Secure Code Scanner
-![CI Status](https://github.com/tinkerlev/nuvai/actions/workflows/ci.yml/badge.svg)
+# Luai – AI-Powered Secure Code Scanner
 
-**Where AI meets precision, with the rigor of real-world penetration testing.**
+**Modern. Secure. AI-Aware.**
 
-Nuvai is an advanced static code analysis engine designed for both technical and non-technical users. It scans source code in multiple programming languages to detect vulnerabilities — especially in AI-generated, No-Code, and Low-Code environments.
+[![CI](https://github.com/tinkerlev/nuvai/actions/workflows/ci.yml/badge.svg)](https://github.com/tinkerlev/nuvai/actions)
+[![Security](https://img.shields.io/badge/security-zero_exec-green)](https://owasp.org)
+[![Built with Flask](https://img.shields.io/badge/backend-Flask-blue)](https://flask.palletsprojects.com/)
+[![Frontend](https://img.shields.io/badge/frontend-React%20%7C%20Tailwind-blue)](https://reactjs.org/)
 
----
+</div>
 
-## 🧠 What is Nuvai?
-Nuvai automatically detects security flaws in your code using intelligent pattern recognition, code heuristics, and content-based detection.
-
-It’s built with:
-- 🔍 Deep code inspection logic
-- 🔒 ISO/IEC 27001-aligned architecture
-- 🧠 AI awareness and resilience against generated code patterns
-- 📄 Professional-grade reporting
+> **Luai** is a secure-by-design, static analysis engine crafted for developers, red-teamers, and AI-era coders.
+>
+> Built with the rigor of real-world offensive security testing and designed for high-stakes environments.
 
 ---
 
-## 🚀 Features
-- ✅ **Multi-language scanning:** Python, JavaScript, HTML, JSX, TypeScript, PHP, C++
-- ⚠️ **Detects vulnerabilities:** Code injection, XSS, SSRF, insecure deserialization, hardcoded secrets, weak crypto, and more
-- 📁 **Flexible reports:** JSON, TXT, HTML, and PDF
-- 🧠 **AI-Aware:** Scans AI-generated or low-code scripts for critical flaws
-- 💬 **Guided remediation tips** for every issue
-- 🌐 **User-friendly Web UI** built in React
-- 🖥️ **Works via CLI, GUI, or API**
+## 📌 Overview
 
----
+**Luai** scans uploaded source code (Python, JS, JSX, etc.) for security flaws and code hygiene issues — without ever executing it. It’s fast, extensible, and fully aligned with strict standards like ISO 27001, NIST SSDF, and OWASP.
 
-## ✅ Continuous Integration (CI)
-
-Every change is automatically tested with GitHub Actions:
-
-- 🧪 **Backend tests** with `pytest`
-- ⚛️ **Frontend tests** with `vitest` and React Testing Library
-
-You can view test results directly on each pull request.
-
-## 🗂️ Folder Structure
 ```bash
-Nuvai/
-├── assets/                        # Static images and branding assets
-├── backend/                       # Flask backend for the API
-│   ├── utils.py                   # Low-level helpers (e.g. extractors)
-│   ├── update_init.py             # Auto-generation for missing __init__.py files
-│   ├── scanner_controller.py      # Scan orchestration logic
-│   └── tests/                     # Backend tests
-│       ├── test_scan.py           # Valid file scan test
-│       └── test_scan_empty_file.py # Empty, unsupported, insecure file tests
-├── config/                        # (Planned) Centralized configuration
-├── examples/                      # Sample vulnerable code snippets
-├── frontend/                      # React-based frontend
-│   ├── src/                       # Source code directory
-│   │   ├── App.jsx                # Main App component
-│   │   ├── index.css              # Global styles
-│   │   ├── main.jsx               # Entry point for React DOM rendering
-│   │   ├── api/                   # API client logic
-│   │   │   ├── client.js          # Axios instance with defaults
-│   │   │   └── scan.js            # Scan API call definition
-│   │   ├── components/            # Reusable React components
-│   │   │   └── FileUpload.jsx     # File upload handler UI
-│   │   └── pages/                 # React page-level components
-│   │       ├── Home.jsx           # Home page view
-│   │       └── ScanResult.jsx     # Scan results renderer
-│   └── __tests__/                 # Frontend test suite (Vitest)
-│       └── App.test.jsx           # UI-level test for App component
-├── src/                           # Core scanner engine
-│   └── nuvai/                     # Language-specific scanners and utils
-│       ├── scanner.py             # Main scan dispatcher
-│       ├── scanner_controller.py  # Scan flow orchestrator
-│       ├── cpp_scanner.py         # C++ analysis rules
-│       ├── html_scanner.py        # HTML analysis rules
-│       ├── javascript_scanner.py  # JS analysis rules
-│       ├── jsx_scanner.py         # JSX rules
-│       ├── php_scanner.py         # PHP rules
-│       ├── python_scanner.py      # Python security checks
-│       ├── typescript_scanner.py  # TypeScript rules
-│       ├── utils.py               # Regex, entropy check, etc.
-│       ├── report_saver.py        # Formats output as PDF/HTML/TXT
-│       ├── config.py              # Severity and rule settings
-│       └── logger.py              # Audit trail and log manager
-├── run.py                         # CLI interface
-├── server.py                      # Entry point for Flask API
-├── install.sh                     # Installer script (cross-platform)
-├── requirements.txt               # Python dependencies
-├── docker-compose.yml             # Docker orchestration
-├── Dockerfile                     # Backend Docker config
-├── README.md
-├── SECURITY.md                    # Security best practices
-├── CONTRIBUTING.md                # Contribution guide
-└── .gitignore                     # Git exclusions
+✔ Zero code execution
+✔ AI-generated code awareness
+✔ Dev-ready reporting and integrations
 ```
 
 ---
 
-## 🛠️ Getting Started
-### Linux / WSL / Kali (recommended):
-```bash
-chmod +x install.sh
-./install.sh
-```
+## ✨ Highlights
 
-### Windows:
-1. Install WSL or use Git Bash
-2. Run:
-```bash
-python3 -m venv .venv
-source .venv/bin/activate
-pip install flask flask-cors
-```
+| Feature                   | Description                                             |
+| ------------------------- | ------------------------------------------------------- |
+| 🔐 Zero Execution         | Code is parsed, analyzed — never run                    |
+| 🧠 AI-Aware Engine        | Recognizes patterns from GPT/Copilot/StackOverflow      |
+| 📚 Multi-Language Support | Python, JavaScript, HTML, JSX, PHP, TypeScript, C++     |
+| 📄 Smart Reports          | Output in JSON, TXT, HTML, PDF                          |
+| 🧪 Audit Tool             | `check_no_execution.py` ensures your backend is clean   |
+| 📦 Modular Scanner Design | Add rules per language easily                           |
+| 🌐 Modern UI              | React + Tailwind interface for file uploads and results |
+| 🛡 Compliance Ready       | ISO/IEC 27001, OWASP Top 10, NIST SSDF aligned          |
 
-### macOS:
-```bash
-brew install python3
-python3 -m venv .venv
-source .venv/bin/activate
-pip install flask flask-cors
-```
+---
 
-### Web UI Setup
+## 🧭 Use Cases
+
+* ✅ Audit AI-generated code before deploying
+* ✅ Prevent interns/devs from uploading insecure code to production
+* ✅ Shift-left secure coding in CI/CD pipelines
+* ✅ Run security workshops and demos with real-time scanning
+
+---
+
+## 🧪 Live Demo & Playground
+
+Try Luai now at: [https://play.luai.io](https://play.luai.io) *(coming soon)*
+
+Use our sandbox to:
+
+* Drag-and-drop code files and inspect findings
+* Run simulated scans using real vulnerable examples
+* Export your report instantly in preferred format
+
+🎬 **Example scan animation:**
+
+![Scan Flow Animation](https://luai.io/assets/demo-scan.gif)
+
+📸 **Smart Screenshots:**
+
+<table>
+  <tr>
+    <td><img src="./assets/ChatGPTImage.png" alt="File Upload UI" width="400"/></td>
+    <td><img src="https://luai.io/assets/ui-results.png" alt="Scan Results UI" width="400"/></td>
+  </tr>
+  <tr>
+    <td align="center">File Upload View</td>
+    <td align="center">Vulnerability Report</td>
+  </tr>
+</table>
+
+---
+
+## 🚀 Quickstart
+
 ```bash
+# Backend
+cd backend
+python3 -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt
+python server.py
+
+# Frontend
 cd frontend
 npm install && npm run dev
 ```
 
----
+📂 Environment: `.env`
 
-## 🧪 How to Run a Scan
-### CLI Mode:
-```bash
-python3 run.py examples/vulnerable_app.py
-```
-Scan a full folder:
-```bash
-python3 run.py /path/to/codebase
+```env
+API_PORT=5000
+ALLOWED_ORIGINS=http://localhost:3000
+MAX_UPLOAD_SIZE_MB=2
 ```
 
-### Web Mode:
+---
+
+## 🧪 API – POST /scan
+
+Send one or more code files to the `/scan` endpoint:
+
 ```bash
-source .venv/bin/activate
-cd backend && python3 server.py
+curl -F "files=@example.js" http://localhost:5000/scan
 ```
-Then visit: [https://localhost:5173](https://localhost:5173)
+
+Returns a structured report with:
+
+* File name
+* Language detected
+* Vulnerability list (severity, title, description, recommendation)
 
 ---
 
-## 📄 Report Formats
-- `.json` — for APIs and automation
-- `.html` — for browsers and documentation
-- `.pdf` — for audits and clients
-- `.txt` — for logs and fast review
+## 📁 Project Structure
 
-Reports saved to: `~/security_reports/`
-
----
-
-## 🔒 Built with Security in Mind (ISO/IEC 27001)
-- ✔ Input validation + output encoding
-- ✔ Temporary files are deleted after scan
-- ✔ No user secrets or logs exposed
-- ✔ Modular logging for audit readiness
-- ✔ Supports offline and privacy-respecting usage
-
----
-
-## 📍 Roadmap
-- [x] Static engine with 7+ language scanners
-- [x] Advanced PDF/HTML/JSON export
-- [x] React frontend
-- [ ] OAuth2 Login support (frontend/backend)
-- [ ] Docker build + CI pipeline
-- [ ] Plugin SDK for adding new rules
-- [ ] Support SARIF/OWASP ZAP exports
+```txt
+📦 Nuvai
+├── backend/              # Flask API
+│   ├── server.py
+│   └── src/nuvai/        # Core engine & scanners
+│       ├── scanner.py
+│       ├── utils/
+│       ├── jsx_scanner.py, etc.
+├── frontend/             # React + Tailwind UI
+│   └── src/pages/
+├── security/
+│   └── check_no_execution.py
+├── examples/             # Sample files to test scanning
+```
 
 ---
 
-## 🤝 Contribute
-See [`CONTRIBUTING.md`](./CONTRIBUTING.md) for full instructions.
-You can:
-- Write rules and scanners
-- Improve documentation or UI
-- Report bugs and ideas
+## 🧩 Integrations (Coming Soon)
+
+| Integration            | Purpose                                    |
+| ---------------------- | ------------------------------------------ |
+| ✅ GitHub SARIF Export  | Appear in GitHub Security tab              |
+| 🧪 Git Pre-Commit Hook | Block commits with high-severity issues    |
+| 🔐 OAuth2 Auth         | Add secure auth for scan permissions       |
+| 🧱 CI Plugins          | GitHub Actions, GitLab CI, Jenkins         |
+| 🧵 Slack Alerts        | Team alerts on new issues                  |
+| 📦 Plugin SDK          | Add custom scanning logic for any language |
+| ⚙️ Docker Image        | Secure container deployment                |
+| 🖥 VSCode Extension    | Run scans in editor                        |
 
 ---
 
-## 👨‍💻 Created by
-**Eliran Loai Deeb**  
-GitHub: [@tinkerlev](https://github.com/tinkerlev)  
-LinkedIn: [linkedin.com/in/loai-deeb](https://www.linkedin.com/in/loai-deeb)
+## 🛡️ Security Philosophy
 
-Want to support or collaborate? See [SPONSORSHIP.md](./SPONSORSHIP.md)
+* No `eval()`, `exec()`, `subprocess()` anywhere in the scanner
+* Files scanned as plain text (UTF-8 enforced)
+* Logs redact `token`, `secret`, `password`, `apikey`
+* Temp files auto-deleted post-scan
+* Includes audit tool: `check_no_execution.py`
 
 ---
 
-> Built with ❤️ for builders, red teamers, and ethical coders.
+## ✅ Standards & Compliance
 
-Stay secure. Stay smart. 🛡️
+| Framework     | Status       |
+| ------------- | ------------ |
+| ISO/IEC 27001 | ✅ Aligned    |
+| OWASP Top 10  | ✅ Mapped     |
+| NIST SSDF     | ✅ Structured |
+
+---
+
+## 👤 About the Author
+
+**Eliran Loai Deeb**
+Cybersecurity architect | AI security researcher | Pentesting instructor
+
+🔗 [https://luai.io](https://luai.io)
+📫 [info@luai.io](mailto:info@luai.io)
+
+---
+
+## 📄 License
+
+Private project – not open-source. Contact the author to discuss commercial or research collaborations.
+
+> Built with ❤️ to make code safer in the AI era.
