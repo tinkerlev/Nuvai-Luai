@@ -68,7 +68,7 @@ class JavaScriptScanner:
 
     def check_debug_statements(self):
         if re.search(r'(console\.log|debugger)', self.code):
-            self.add_finding("INFO", "Debug Statement Detected", "Debugging code found.", "Remove console.log or debugger statements before deployment.")
+            self.add_finding("INFO", "Debug Statement Detected", "Debugging code found.", "Remove console.log or debugger statements before production")
 
     def check_insecure_http(self):
         if re.search(r'fetch\("http:|axios\.get\("http:', self.code):

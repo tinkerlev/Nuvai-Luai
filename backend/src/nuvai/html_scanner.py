@@ -78,7 +78,7 @@ class HTMLScanner:
 
     def check_suspicious_comments(self):
         if re.search(r'<!--.*(TODO|FIXME|DEBUG|password).*-->', self.code, re.IGNORECASE):
-            self.add_finding("INFO", "Suspicious HTML Comment", "Found development-related or sensitive comment.", "Remove all sensitive or debug-related comments before deployment.")
+            self.add_finding("INFO", "Suspicious HTML Comment", "Found development-related or sensitive comment.", "Remove all sensitive or debug-related comments before production")
 
     def check_sensitive_disclosures(self):
         patterns = [r'/etc/', r'\buser(name)?\b', r'admin', r'\b[A-Za-z0-9_.-]+@[A-Za-z0-9_.-]+\.[a-z]+\b', r'\b(?:[0-9]{1,3}\.){3}[0-9]{1,3}\b']

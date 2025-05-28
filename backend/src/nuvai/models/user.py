@@ -1,3 +1,5 @@
+# user.py
+import os
 from datetime import datetime, timezone
 from enum import Enum
 from sqlalchemy import (
@@ -11,27 +13,22 @@ from src.nuvai.utils.logger import get_logger
 
 logger = get_logger("UserModel")
 
-
 class UserRole(str, Enum):
     USER = "user"
     ADMIN = "admin"
 
-
 class User(Base):
     __tablename__ = 'users'
-
     id = Column(Integer, primary_key=True)
     email = Column(String(120), unique=True, nullable=False, index=True)
     password = Column(String(255), nullable=False)
-    
     first_name = Column(String(50), nullable=True)
     last_name = Column(String(50), nullable=True)
     plan = Column(String(20), default="free", nullable=False)
     phone = Column(String(20), nullable=True)
     profession = Column(String(50), nullable=True)
     company = Column(String(50), nullable=True)
-
-    
+    logo_path = Column(String(255), nullable=True)
     is_verified = Column(Boolean, default=False)
     role = Column(SqlEnum(UserRole), default=UserRole.USER, nullable=False)
     is_active = Column(Boolean, default=True)
@@ -48,12 +45,10 @@ class User(Base):
     )
 
     def set_password(self, raw_password: str):
-        """Hashes and stores the user's password securely."""
         self.password = generate_password_hash(raw_password)
         logger.debug(f"Password hashed for user {self.email}")
 
     def check_password(self, raw_password: str) -> bool:
-        """Validates a plain password against the hashed version."""
         return check_password_hash(self.password, raw_password)
 
     def mark_login_success(self):
@@ -72,7 +67,6 @@ class User(Base):
         logger.critical(f"Account locked due to repeated failures: {self.email}")
 
     def save(self):
-        """Saves or updates the user in the database."""
         try:
             with db_session() as session:
                 session.add(self)
@@ -99,3 +93,23 @@ class User(Base):
 
     def __repr__(self):
         return f"<User(email={self.email}, verified={self.is_verified}, active={self.is_active})>"
+
+    def has_valid_logo(self) -> bool:
+        if not self.logo_path:
+            return False
+        relative_path = os.path.normpath(self.logo_path.strip("/"))
+        absolute_logo_path = os.path.abspath(os.path.join("static", relative_path))
+        static_root = os.path.abspath("static")
+        if not absolute_logo_path.startswith(static_root):
+            logger.warning(f"Attempt to access file outside static directory: {absolute_logo_path}")
+            return False
+
+        return os.path.isfile(absolute_logo_path) and absolute_logo_path.lower().endswith(('.png', '.jpg', '.jpeg', '.gif'))
+
+    def get_logo_url(self) -> str:
+        if self.logo_path and self.has_valid_logo():
+            return f"/{self.logo_path.strip('/')}"
+        return "/static/default_logo.png"
+
+    def get_full_name(self) -> str:
+        return f"{self.first_name or ''} {self.last_name or ''}".strip()    
