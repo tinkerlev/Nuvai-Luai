@@ -49,7 +49,10 @@ export default function App() {
       .replace(/\b(Low.*?):/gi, '<span class="text-green-600 font-semibold">🟢 $1:</span>')
       .replace(/\b(Warning.*?):/gi, '<span class="text-yellow-400 font-semibold">⚠️ $1:</span>')
       .replace(/\b(Info.*?):/gi, '<span class="text-sky-500 font-semibold">💡 $1:</span>')
-      .replace(/\b(Tip.*?):/gi, '<span class="text-sky-400 font-semibold">🔎 $1:</span>');
+      .replace(/\b(Tip.*?):/gi, '<span class="text-sky-400 font-semibold">🔎 $1:</span>')
+      .replace(/\b(Short.*?):/gi, '<span class="text-yellow-500 font-semibold">⚡ $1:</span>')
+      .replace(/\b(Long.*?):/gi, '<span class="text-yellow-500 font-semibold">⚡ $1:</span>')
+      .replace(/\b(Immediate.*?):/gi, '<span class="text-yellow-500 font-semibold">⚡ $1:</span>');
   };
   return (
     <div className="min-h-screen bg-base-200 py-10">
