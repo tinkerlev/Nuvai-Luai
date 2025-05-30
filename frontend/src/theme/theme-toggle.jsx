@@ -86,7 +86,6 @@ export function ThemeToggle() {
       setIsDarkTheme(darkThemes.includes(systemTheme));
     } else {
       // Make sure we're using a valid theme name
-      console.log(`Applying theme: ${theme}`);
       root.setAttribute('data-theme', theme);
       setIsDarkTheme(darkThemes.includes(theme));
     }

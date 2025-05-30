@@ -8,7 +8,6 @@ import PrivateRoute from "./components/PrivateRoute";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
 import HomePage from "./pages/Home";
 import Footer from "./components/Footer";
-import { ThemeToggle } from "./theme/theme-toggle";
 import GetEarlyAccess from './pages/GetEarlyAccess';
 import { SpeedInsights } from "@vercel/speed-insights/react"
 import { Analytics } from "@vercel/analytics/react"
@@ -18,7 +17,6 @@ export default function AppRouter() {
     <Router>
       <div className="flex flex-col min-h-screen">
         <div className="flex-grow">
-        <ThemeToggle />
           <Routes>
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />

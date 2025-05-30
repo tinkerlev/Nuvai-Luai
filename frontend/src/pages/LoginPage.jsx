@@ -1,7 +1,9 @@
+// LoginPage.jsx
 import React, { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Icon } from '@iconify/react';
+import LoginOptions from "../components/LoginOptions";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -13,6 +15,8 @@ export default function LoginPage() {
   const [passwordScore, setPasswordScore] = useState(null);
   const [termsAccepted, setTermsAccepted] = useState(false);
   const navigate = useNavigate();
+  const [failedCount, setFailedCount] = useState(null);
+  const [lockoutTimeLeft, setLockoutTimeLeft] = useState(0);
 
   useEffect(() => {
     const saved = localStorage.getItem("lockoutUntil");
@@ -44,20 +48,15 @@ export default function LoginPage() {
     return () => clearInterval(interval);
   }, [lockoutUntil]);
 
-  const validateEmail = (email) => {
-    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-  };
+  const validateEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
-  const validatePassword = (pwd) => {
-    return (
-      pwd.length >= 12 &&
-      /[A-Z]/.test(pwd) &&
-      /[a-z]/.test(pwd) &&
-      /[0-9]/.test(pwd) &&
-      /[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(pwd) &&
-      !/\s/.test(pwd)
-    );
-  };
+  const validatePassword = (pwd) =>
+    pwd.length >= 12 &&
+    /[A-Z]/.test(pwd) &&
+    /[a-z]/.test(pwd) &&
+    /[0-9]/.test(pwd) &&
+    /[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(pwd) &&
+    !/\s/.test(pwd);
 
   const sanitizeInput = (input) => input.replace(/[<>"']/g, "").normalize("NFKC");
 
@@ -65,6 +64,21 @@ export default function LoginPage() {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
     return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  const formatCountdown = (seconds) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}m ${secs.toString().padStart(2, '0')}s`;
+  };
+
+  const getLockoutMessage = (count) => {
+    if (count < 5) return `✅ You have ${count} failed attempts. No lockout yet.`;
+    if (count < 10) return `⏳ ${count} failed attempts. Locked 1 min.`;
+    if (count < 15) return `⏳ ${count} failed attempts. Locked 2 min.`;
+    if (count < 20) return `⏳ ${count} failed attempts. Locked 4 min.`;
+    if (count < 25) return `⏳ ${count} failed attempts. Locked 8 min.`;
+    return `❌ Account locked due to too many failed attempts.`;
   };
 
   const handlePasswordChange = (value) => {
@@ -183,15 +197,16 @@ export default function LoginPage() {
           <div className="card-body">
             <div className="flex justify-center mb-4">
               <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
-                <Icon icon="mdi:lock" className="w-8 h-8 text-primary"/>
+                <Icon icon="mdi:lock" className="w-8 h-8 text-primary" />
               </div>
             </div>
-            
+
             <h2 className="text-2xl font-bold text-center mb-6 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
               Secure Login
             </h2>
-            
+
             <form onSubmit={handleSubmit}>
+              {/* Email Input */}
               <div className="form-control mb-4">
                 <label className="label">
                   <span className="label-text">Email</span>
@@ -206,7 +221,8 @@ export default function LoginPage() {
                   autoComplete="username"
                 />
               </div>
-              
+
+              {/* Password Input */}
               <div className="form-control mb-2">
                 <label className="label">
                   <span className="label-text">Password</span>
@@ -222,19 +238,23 @@ export default function LoginPage() {
                   onPaste={(e) => e.preventDefault()}
                 />
               </div>
-              
+
+              {/* Password Strength */}
               {passwordScore !== null && (
-                <motion.div 
+                <motion.div
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   className="mb-4"
                 >
-                  <progress 
+                  <progress
                     className={`progress w-full ${
-                      passwordScore >= 5 ? "progress-success" : 
-                      passwordScore >= 3 ? "progress-warning" : "progress-error"
-                    }`} 
-                    value={passwordScore} 
+                      passwordScore >= 5
+                        ? "progress-success"
+                        : passwordScore >= 3
+                        ? "progress-warning"
+                        : "progress-error"
+                    }`}
+                    value={passwordScore}
                     max="5"
                   ></progress>
                   <p className="text-xs mt-1 text-center">
@@ -242,7 +262,8 @@ export default function LoginPage() {
                   </p>
                 </motion.div>
               )}
-              
+
+              {/* Errors */}
               {errorMsg && (
                 <motion.div
                   initial={{ opacity: 0, y: -10 }}
@@ -253,7 +274,8 @@ export default function LoginPage() {
                   <span>{errorMsg}</span>
                 </motion.div>
               )}
-              
+
+              {/* Lockout Notice */}
               {timeLeft > 0 && (
                 <motion.div
                   initial={{ opacity: 0 }}
@@ -264,19 +286,21 @@ export default function LoginPage() {
                   <span>Locked out. Please wait {formatTimeLeft(timeLeft)} before trying again.</span>
                 </motion.div>
               )}
-              
+
+              {/* Terms Checkbox */}
               <div className="form-control mb-4">
                 <label className="label cursor-pointer justify-start gap-2">
-                  <input 
-                    type="checkbox" 
-                    className="checkbox checkbox-sm checkbox-primary" 
+                  <input
+                    type="checkbox"
+                    className="checkbox checkbox-sm checkbox-primary"
                     checked={termsAccepted}
                     onChange={() => setTermsAccepted(!termsAccepted)}
                   />
                   <span className="label-text">I accept the Terms and Conditions</span>
                 </label>
               </div>
-              
+
+              {/* Submit Button */}
               <button
                 type="submit"
                 disabled={loading || timeLeft > 0 || !termsAccepted}
@@ -295,9 +319,22 @@ export default function LoginPage() {
                 )}
               </button>
             </form>
-            
-            <div className="divider my-4">OR</div>
-            
+
+            {/* OAuth Options */}
+            <div className="flex flex-col items-center">
+              <h1 className="text-xl font-semibold mb-4">Sign in securely</h1>
+              <LoginOptions setFailedCount={setFailedCount} setLockoutTimeLeft={setLockoutTimeLeft} />
+              {failedCount !== null && (
+                <div className="mt-4 text-sm text-red-600">
+                  <p>{getLockoutMessage(failedCount)}</p>
+                  {lockoutTimeLeft > 0 && (
+                    <p className="text-gray-500">⏱ Time remaining: {formatCountdown(lockoutTimeLeft)}</p>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Footer Links */}
             <div className="text-sm text-center space-y-2">
               <Link to="/register" className="link link-primary block hover:underline">
                 Create a new account
