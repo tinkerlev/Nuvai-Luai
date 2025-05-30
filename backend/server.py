@@ -2,12 +2,13 @@
 
 import sys
 import os
+from dotenv import load_dotenv
+load_dotenv()
 import uuid
 import logging
 from functools import wraps
 from flask import Flask, request, jsonify, send_from_directory, abort
 from flask_cors import CORS
-from dotenv import load_dotenv
 from werkzeug.utils import secure_filename
 from src.nuvai.routes.auth_routes import auth_blueprint
 from src.nuvai.routes.reset_password_secure import reset_blueprint
@@ -20,17 +21,16 @@ from src.nuvai.utils.logger import get_logger
 from src.nuvai.core.db import init_db
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from src.nuvai.models.user import User
+from src.nuvai.routes.auth_oauth import oauth_bp, oauth
 
 logger = get_logger(__name__)
 
 ENVIRONMENT = os.getenv("ENV", "development").lower()
 log_level = logging.INFO if ENVIRONMENT == "production" else logging.DEBUG
-
 logging.basicConfig(
     level=log_level,
     format='[%(asctime)s] [%(levelname)s] %(message)s',
 )
-load_dotenv()
 validate_config()
 config = get_config()
 API_PORT = int(os.getenv("API_PORT", 5000))
@@ -51,11 +51,9 @@ for directory in required_dirs:
         os.makedirs(directory, exist_ok=True)
     except Exception as e:
         logger.error(f"Failed to create directory {directory}: {str(e)}")
-        # Handle the error (e.g., by returning a response or raising an exception)
         abort(500)
 
 def rate_limit_check():
-    # Placeholder – add logic later if needed
     return False
 
 def method_check(allowed_methods):
@@ -71,6 +69,8 @@ def method_check(allowed_methods):
 
 def create_app():
     app = Flask(__name__)
+    oauth.init_app(app)
+    app.secret_key = os.getenv("FLASK_SECRET_KEY", "super-secret-dev-key")
     app.config["MAX_CONTENT_LENGTH"] = MAX_FILE_SIZE
     logger.debug(f"ALLOWED_ORIGINS = {ALLOWED_ORIGINS}")
     CORS(app,
@@ -81,6 +81,7 @@ def create_app():
     app.register_blueprint(reset_blueprint, url_prefix="/auth")
     app.register_blueprint(auth_blueprint, url_prefix="/auth")
     app.register_blueprint(early_access_blueprint)
+    app.register_blueprint(oauth_bp)
 
     @app.route("/favicon.ico")
     def favicon():
