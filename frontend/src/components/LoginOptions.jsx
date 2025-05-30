@@ -20,11 +20,6 @@ const providers = [
     id: "linkedin",
     icon: PROVIDER_ICONS.linkedin
   },
-  {
-    name: "Apple",
-    id: "apple",
-    icon: PROVIDER_ICONS.apple
-  }
 ];
 
 export default function LoginOptions({ setFailedCount, setLockoutTimeLeft }) {
