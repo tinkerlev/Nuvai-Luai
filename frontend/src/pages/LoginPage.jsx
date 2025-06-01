@@ -193,20 +193,30 @@ export default function LoginPage() {
         variants={fadeIn}
         className="w-full max-w-md"
       >
+
         <div className="card w-full bg-base-100 shadow-xl border border-base-300">
           <div className="card-body">
             <div className="flex justify-center mb-4">
-              <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
-                <Icon icon="mdi:lock" className="w-8 h-8 text-primary" />
+              <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center">
+                <img src="/assets/Logo-Luai-tr.svg" alt="Luai Logo" className="w-20 h-20 object-contain rounded-full shadow" />
               </div>
             </div>
-
             <h2 className="text-2xl font-bold text-center mb-6 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
               Secure Login
             </h2>
-
+            <div className="flex flex-col items-center">
+              <h1 className="text-xl font-semibold mb-4">Sign in securely</h1>
+              <LoginOptions setFailedCount={setFailedCount} setLockoutTimeLeft={setLockoutTimeLeft} />
+              {failedCount !== null && (
+                <div className="mt-4 text-sm text-red-600">
+                  <p>{getLockoutMessage(failedCount)}</p>
+                  {lockoutTimeLeft > 0 && (
+                    <p className="text-gray-500">⏱ Time remaining: {formatCountdown(lockoutTimeLeft)}</p>
+                  )}
+                </div>
+              )}
+            </div>
             <form onSubmit={handleSubmit}>
-              {/* Email Input */}
               <div className="form-control mb-4">
                 <label className="label">
                   <span className="label-text">Email</span>
@@ -222,7 +232,6 @@ export default function LoginPage() {
                 />
               </div>
 
-              {/* Password Input */}
               <div className="form-control mb-2">
                 <label className="label">
                   <span className="label-text">Password</span>
@@ -239,7 +248,6 @@ export default function LoginPage() {
                 />
               </div>
 
-              {/* Password Strength */}
               {passwordScore !== null && (
                 <motion.div
                   initial={{ opacity: 0 }}
@@ -263,7 +271,6 @@ export default function LoginPage() {
                 </motion.div>
               )}
 
-              {/* Errors */}
               {errorMsg && (
                 <motion.div
                   initial={{ opacity: 0, y: -10 }}
@@ -275,7 +282,6 @@ export default function LoginPage() {
                 </motion.div>
               )}
 
-              {/* Lockout Notice */}
               {timeLeft > 0 && (
                 <motion.div
                   initial={{ opacity: 0 }}
@@ -287,7 +293,6 @@ export default function LoginPage() {
                 </motion.div>
               )}
 
-              {/* Terms Checkbox */}
               <div className="form-control mb-4">
                 <label className="label cursor-pointer justify-start gap-2">
                   <input
@@ -300,7 +305,6 @@ export default function LoginPage() {
                 </label>
               </div>
 
-              {/* Submit Button */}
               <button
                 type="submit"
                 disabled={loading || timeLeft > 0 || !termsAccepted}
@@ -319,20 +323,6 @@ export default function LoginPage() {
                 )}
               </button>
             </form>
-
-            {/* OAuth Options */}
-            <div className="flex flex-col items-center">
-              <h1 className="text-xl font-semibold mb-4">Sign in securely</h1>
-              <LoginOptions setFailedCount={setFailedCount} setLockoutTimeLeft={setLockoutTimeLeft} />
-              {failedCount !== null && (
-                <div className="mt-4 text-sm text-red-600">
-                  <p>{getLockoutMessage(failedCount)}</p>
-                  {lockoutTimeLeft > 0 && (
-                    <p className="text-gray-500">⏱ Time remaining: {formatCountdown(lockoutTimeLeft)}</p>
-                  )}
-                </div>
-              )}
-            </div>
 
             {/* Footer Links */}
             <div className="text-sm text-center space-y-2">

@@ -14,7 +14,7 @@ from src.nuvai.routes.auth_routes import auth_blueprint
 from src.nuvai.routes.reset_password_secure import reset_blueprint
 from src.nuvai.routes.early_access_routes import early_access_blueprint
 from config import get_config, validate_config
-from src.nuvai.utils.ai_analyzer import analyze_scan_results
+# from src.nuvai.utils.ai_analyzer import analyze_scan_results
 from src.nuvai import scan_code
 from src.nuvai.utils.get_language import get_language
 from src.nuvai.utils.logger import get_logger
@@ -167,6 +167,16 @@ def create_app():
             return jsonify(scan_and_return(file))
         results = [scan_and_return(file) for _, file in file_items]
         return jsonify(results)
+    def run_analysis_later(data):
+        try:
+            from src.nuvai.utils.ai_analyzer import analyze_scan_results
+            return analyze_scan_results(data)
+        except Exception as e:
+            logger.warning(f"[AI Analyzer] Skipped due to missing key or error: {e}")
+            return {
+                "ai_analysis": "AI analysis not available.",
+                "model_used": "None"
+            }
 
     def scan_and_return(file):
         original_filename = secure_filename(file.filename)
@@ -183,7 +193,7 @@ def create_app():
                 code = f.read()
             language = get_language(original_filename, code)
             findings = scan_code(code, language)
-            ai_summary = analyze_scan_results({
+            ai_summary = run_analysis_later({
                 "filename": original_filename,
                 "language": language,
                 "vulnerabilities": findings
