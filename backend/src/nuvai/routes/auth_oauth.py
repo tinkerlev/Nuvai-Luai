@@ -108,7 +108,9 @@ def login_provider(provider):
     if provider not in ALLOWED_PROVIDERS:
         logger.warning(f"Attempted login with unsupported provider: {provider}")
         abort(400, description="Unsupported provider")
-    redirect_uri = url_for("oauth_bp.callback_provider", provider=provider, _external=True)
+    base = os.getenv("OAUTH_REDIRECT_BASE", request.host_url.rstrip("/"))
+    redirect_uri = f"{base}/auth/callback/{provider}"
+
     state = secrets.token_urlsafe(16)
     return oauth.create_client(provider).authorize_redirect(redirect_uri, state=state)
 
