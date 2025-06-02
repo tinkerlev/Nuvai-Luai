@@ -12,6 +12,8 @@ load_dotenv()
 import os
 import secrets
 
+logger = get_logger(__name__)
+
 redis_client = Redis.from_url(os.getenv("REDIS_URL", "redis://localhost:6379/0"))
 
 def get_lockout_duration(failure_count):
@@ -110,9 +112,15 @@ def login_provider(provider):
         abort(400, description="Unsupported provider")
     base = os.getenv("OAUTH_REDIRECT_BASE", request.host_url.rstrip("/"))
     redirect_uri = f"{base}/auth/callback/{provider}"
-
-    state = secrets.token_urlsafe(16)
-    return oauth.create_client(provider).authorize_redirect(redirect_uri, state=state)
+    
+    logger.info(f"[OAuth] Using redirect URI for {provider}: {redirect_uri}")
+    
+    try:
+            state = secrets.token_urlsafe(16)
+            return oauth.create_client(provider).authorize_redirect(redirect_uri, state=state)
+    except Exception as e:
+            logger.exception(f"[OAuth] Failed to redirect to provider {provider}: {str(e)}")
+            return jsonify({"error": "OAuth redirect failed", "details": str(e)}), 500
 
 @oauth_bp.route("/auth/callback/<provider>")
 def callback_provider(provider):
