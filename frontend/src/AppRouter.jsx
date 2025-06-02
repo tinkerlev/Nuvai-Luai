@@ -11,11 +11,15 @@ import Footer from "./components/Footer";
 import GetEarlyAccess from './pages/GetEarlyAccess';
 import { SpeedInsights } from "@vercel/speed-insights/react"
 import { Analytics } from "@vercel/analytics/react"
+import ThemeSwitcher from "./components/ThemeSwitcher";
 
 export default function AppRouter() {
   return (
     <Router>
       <div className="flex flex-col min-h-screen">
+        <div className="flex justify-end p-4">
+          <ThemeSwitcher />
+        </div>
         <div className="flex-grow">
           <Routes>
             <Route path="/login" element={<LoginPage />} />
@@ -24,7 +28,6 @@ export default function AppRouter() {
             <Route path="/reset-password" element={<ResetPasswordPage />} />
             <Route path="/Home" element={<HomePage />} />
             <Route path="/early-access" element={<GetEarlyAccess />} />
-            <Route path="/scan" element={<UploadPage />} />
             <Route
               path="/scan"
               element={

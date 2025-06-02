@@ -2,10 +2,7 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-@plugin "daisyui";
-@plugin "daisyui" {
-  themes: all;
-}
+
 
 @layer base {
   /* Custom base styles */
@@ -15,6 +12,7 @@
   body {
     background-color: hsl(var(--b1));
     color: hsl(var(--bc));
+    @apply bg-base-100 text-base-content;
   }
 }
 

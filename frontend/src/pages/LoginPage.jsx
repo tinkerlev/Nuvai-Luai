@@ -197,16 +197,21 @@ export default function LoginPage() {
         <div className="card w-full bg-base-100 shadow-xl border border-base-300">
           <div className="card-body">
             <div className="flex justify-center mb-4">
-              <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center">
-                <img src="/assets/Logo-Luai-tr.svg" alt="Luai Logo" className="w-20 h-20 object-contain rounded-full shadow" />
+              <div className="w-20 h-20 rounded-full bg-white/90 shadow-2xl shadow-black/40 backdrop-blur-md flex items-center justify-center transform -translate-y-4 hover:scale-105 transition duration-500">
+                <img src="/Logo-Luai-tr.svg" alt="Luai Logo" className="w-14 h-14 object-contain" />
               </div>
             </div>
             <h2 className="text-2xl font-bold text-center mb-6 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-              Secure Login
+              Luai your AI pentester
             </h2>
             <div className="flex flex-col items-center">
-              <h1 className="text-xl font-semibold mb-4">Sign in securely</h1>
+              <h1 className="text-xl font-semibold mb-4">Sign in</h1>
               <LoginOptions setFailedCount={setFailedCount} setLockoutTimeLeft={setLockoutTimeLeft} />
+              <div className="flex items-center my-6 w-full">
+                <div className="h-px flex-grow bg-gray-500 opacity-30"></div>
+                <span className="px-4 text-gray-400 text-lg select-none whitespace-nowrap">or</span>
+                <div className="h-px flex-grow bg-gray-500 opacity-30"></div>
+              </div>
               {failedCount !== null && (
                 <div className="mt-4 text-sm text-red-600">
                   <p>{getLockoutMessage(failedCount)}</p>
