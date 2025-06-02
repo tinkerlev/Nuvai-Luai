@@ -10,10 +10,11 @@ from redis import Redis
 from dotenv import load_dotenv
 load_dotenv()
 import os
+import re
 import secrets
+from urllib.parse import urlparse
 
 logger = get_logger(__name__)
-
 redis_client = Redis.from_url(os.getenv("REDIS_URL", "redis://localhost:6379/0"))
 
 def get_lockout_duration(failure_count):
@@ -55,6 +56,13 @@ def register_failed_attempt(provider, ip):
 def reset_failed_attempts(provider, ip):
     redis_client.delete(f"failures:{provider}:{ip}")
     redis_client.delete(f"lock:{provider}:{ip}")
+
+def is_safe_redirect_path(path):
+    if urlparse(path).netloc:
+        return False
+    if not re.match(r"^/[a-zA-Z0-9/_\-]*$", path):
+        return False
+    return True
 
 oauth_bp = Blueprint('oauth_bp', __name__)
 oauth = OAuth()
@@ -111,10 +119,10 @@ def login_provider(provider):
         logger.warning(f"Attempted login with unsupported provider: {provider}")
         abort(400, description="Unsupported provider")
     base = os.getenv("OAUTH_REDIRECT_BASE", request.host_url.rstrip("/"))
-    redirect_uri = f"{base}/auth/callback/{provider}"
-    
+    return_to = request.args.get("returnTo", "/login")
+    redirect_uri = f"{base}/auth/callback/{provider}?returnTo={return_to}"
     logger.info(f"[OAuth] Using redirect URI for {provider}: {redirect_uri}")
-    
+
     try:
             state = secrets.token_urlsafe(16)
             return oauth.create_client(provider).authorize_redirect(redirect_uri, state=state)
@@ -173,12 +181,19 @@ def callback_provider(provider):
             user = User.create_oauth_user(email=email, name=name, provider=provider)
         logger.info(f"{provider.capitalize()} login successful: {email} | {name}")
         reset_failed_attempts(provider, ip_address)
+        return_to = request.args.get("returnTo")
         ENVIRONMENT = os.getenv("ENV", "development").lower()
-        redirect_url = (
-            "https://luai.io/dashboard"
-            if ENVIRONMENT == "production"
-            else "http://localhost:3000/dashboard"
-        )
+        if return_to and is_safe_redirect_path(return_to):
+            base = "https://luai.io" if ENVIRONMENT == "production" else "http://localhost:3000"
+            redirect_url = f"{base}{return_to}"
+        else:
+            if return_to and return_to.startswith("http"):
+                logger.warning(f"[OAuth] Unsafe returnTo URL blocked: {return_to}")
+            redirect_url = (
+                "https://luai.io/dashboard"
+                if ENVIRONMENT == "production"
+                else "http://localhost:3000/dashboard"
+            )
         resp = make_response(redirect(redirect_url))
         jwt_token, csrf_token = create_tokens(user.id)
         resp.set_cookie("__Secure-luai.jwt", jwt_token, httponly=True, secure=True, samesite='Lax', max_age=3600)

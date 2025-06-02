@@ -1,9 +1,9 @@
 // LoginOptions.jsx
 import React from "react";
 import { ALLOWED_PROVIDERS, PROVIDER_ICONS } from "../constants/providers";
+import { useLocation } from "react-router-dom";
 
 const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:5000";
-
 const providers = [
   {
     name: "Google",
@@ -23,13 +23,16 @@ const providers = [
 ];
 
 export default function LoginOptions({ setFailedCount, setLockoutTimeLeft }) {
+  const location = useLocation();
+  const currentPath = location.pathname || "/login";
   const handleLogin = (provider) => {
     try {
       if (!ALLOWED_PROVIDERS.includes(provider)) {
         console.warn(`Provider "${provider}" is not allowed.`);
         return;
       }
-      window.location.replace(`${API_BASE}/auth/login/${provider}`);
+  const encodedReturnTo = encodeURIComponent(currentPath);
+  window.location.replace(`${API_BASE}/auth/login/${provider}?returnTo=${encodedReturnTo}`);
     } catch (err) {
       console.error("Login failed:", err);
       if (typeof setFailedCount === "function") {

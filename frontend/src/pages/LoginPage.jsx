@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { Icon } from '@iconify/react';
 import LoginOptions from "../components/LoginOptions";
 
+
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -19,6 +20,7 @@ export default function LoginPage() {
   const [lockoutTimeLeft, setLockoutTimeLeft] = useState(0);
 
   useEffect(() => {
+    localStorage.setItem("returnTo", "/login");
     const saved = localStorage.getItem("lockoutUntil");
     if (saved) {
       const until = new Date(saved);
@@ -27,6 +29,7 @@ export default function LoginPage() {
       } else {
         localStorage.removeItem("lockoutUntil");
         localStorage.removeItem("failCount");
+        localStorage.setItem("returnTo", "/login");
       }
     }
   }, []);
@@ -197,7 +200,7 @@ export default function LoginPage() {
         <div className="card w-full bg-base-100 shadow-xl border border-base-300">
           <div className="card-body">
             <div className="flex justify-center mb-4">
-              <div className="w-20 h-20 rounded-full bg-white/90 shadow-2xl shadow-black/40 backdrop-blur-md flex items-center justify-center transform -translate-y-4 hover:scale-105 transition duration-500">
+              <div className="w-20 h-20 rounded-full bg-white/90 shadow-2xl shadow-black/10 backdrop-blur-md flex items-center justify-center transform -translate-y-4 hover:scale-105 transition duration-500">
                 <img src="/Logo-Luai-tr.svg" alt="Luai Logo" className="w-14 h-14 object-contain" />
               </div>
             </div>
