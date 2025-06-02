@@ -85,7 +85,7 @@ ALLOWED_PROVIDERS = {
         "api_base_url": "https://api.linkedin.com/v2/",
         "userinfo_endpoint": "me",
         "client_kwargs": {
-            "scope": "r_liteprofile r_emailaddress",
+            "scope": "openid profile email",
             "prompt": "consent"
         }
     }
