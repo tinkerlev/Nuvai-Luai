@@ -4,7 +4,9 @@ import jwt
 from datetime import datetime, timedelta
 from redis import Redis
 from jwt import ExpiredSignatureError, InvalidTokenError
+from flask import Response
 
+IS_PRODUCTION = os.getenv("ENV", "development") == "production"
 redis_client = Redis.from_url(os.getenv("REDIS_URL", "redis://localhost:6379/0"))
 SECRET_KEY = os.getenv("JWT_SECRET_KEY", "change-this-secret")
 ALGORITHM = "HS256"
@@ -58,3 +60,23 @@ def blacklist_token(token):
                 redis_client.setex(f"blacklist:{jti}", ttl, "revoked")
     except Exception as e:
         pass
+
+def issue_login_cookie(response: Response, access_token: str, csrf_token: str):
+    response.set_cookie(
+        key="luai.jwt",
+        value=access_token,
+        httponly=True,
+        secure=IS_PRODUCTION,
+        samesite="None",
+        max_age=3600,
+        path="/"
+    )
+    response.set_cookie(
+        key="luai.csrf",
+        value=csrf_token,
+        httponly=False,
+        secure=IS_PRODUCTION,
+        samesite="None",
+        max_age=3600,
+        path="/"
+    )

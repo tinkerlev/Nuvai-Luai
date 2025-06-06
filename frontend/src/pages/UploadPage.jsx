@@ -110,15 +110,6 @@ export default function App() {
               <p className="text-base-content/70 mb-6">
                 Upload your code files for instant security analysis and vulnerability detection
               </p>
-              <div className="flex justify-end mb-4">
-                <button
-                  onClick={handleLogout}
-                  className="btn btn-sm btn-outline btn-error gap-2"
-                >
-                  <Icon icon="mdi:logout" />
-                  Logout
-                </button>
-              </div>
               <UploadForm onScan={handleScanResult} />
             </div>
           </div>

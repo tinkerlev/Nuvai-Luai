@@ -196,7 +196,7 @@ def callback_provider(provider):
             )
         resp = make_response(redirect(redirect_url))
         jwt_token, csrf_token = create_tokens(user.id)
-        resp.set_cookie("__Secure-luai.jwt", jwt_token, httponly=True, secure=True, samesite='Lax', max_age=3600)
+        resp.set_cookie("luai.jwt", jwt_token, httponly=True, secure=True, samesite='Lax', max_age=3600)
         resp.set_cookie("__Secure-luai.csrf", csrf_token, httponly=False, secure=True, samesite='Lax', max_age=3600)
         return resp
     except Exception as e:

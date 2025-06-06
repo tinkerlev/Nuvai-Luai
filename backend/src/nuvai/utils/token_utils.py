@@ -1,4 +1,4 @@
-# File: backend/src/nuvai/utils/token_utils.py
+# File: token_utils.py
 
 import os
 import jwt
@@ -10,7 +10,6 @@ from src.nuvai.utils.logger import get_logger
 load_dotenv()
 logger = get_logger(__name__)
 
-# Load secret key securely from environment
 JWT_SECRET = os.getenv("NUVAI_SECRET")
 JWT_ALGORITHM = "HS256"
 JWT_EXPIRATION_HOURS = int(os.getenv("JWT_EXPIRATION_HOURS", 2))
@@ -24,7 +23,9 @@ def generate_jwt(user_id: int, email: str, custom_claims: dict = None) -> str:
     """
     try:
         payload = {
-            "sub": user_id,
+            "iss": "luai-auth",
+            "aud": "luai-client",
+            "sub": email,
             "email": email,
             "iat": datetime.datetime.utcnow(),
             "exp": datetime.datetime.utcnow() + datetime.timedelta(hours=JWT_EXPIRATION_HOURS)

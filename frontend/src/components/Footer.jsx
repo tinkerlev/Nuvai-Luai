@@ -30,7 +30,7 @@ export default function Footer() {
         </div>
       </div> 
       
-      <div className="flex-1 flex justify-center w-[fill-available]">
+      <div className="flex-1 flex justify-center w-full text-right">
         <div className="flex gap-2">
           <a href="https://www.linkedin.com/in/loai-deeb/" target="_blank" rel="noreferrer" className="btn btn-ghost btn-sm btn-circle">
             <Icon icon="mdi:linkedin" className="h-5 w-5" />
@@ -38,16 +38,15 @@ export default function Footer() {
           <a href="https://x.com/loai_nuvai" target="_blank" rel="noreferrer" className="btn btn-ghost btn-sm btn-circle">
             <Icon icon="mdi:twitter" className="h-5 w-5" />
           </a> 
-          <a href="https://github.com/tinkerle/nuvai" target="_blank" rel="noreferrer" className="btn btn-ghost btn-sm btn-circle">
+          <a href="https://github.com/tinkerle/" target="_blank" rel="noreferrer" className="btn btn-ghost btn-sm btn-circle">
             <Icon icon="mdi:github" className="h-5 w-5" />
           </a>
         </div>
       </div> 
-      
-      <div className="flex-1 flex justify-end w-[fill-available] text-right">
+      <div className="flex-1 flex justify-end w-full text-right">
         <div>
           <p className="text-sm">
-            Have questions? Email us at <a href="mailto:security@Luai.io" className="link link-primary">info@luai.io</a>
+            Have questions? Email us at <a href="mailto:info@Luai.io" className="link link-primary">info@luai.io</a>
           </p>
           <p className="text-xs mt-1">
             Copyright © {new Date().getFullYear()} Your AI-Powered Security Partner

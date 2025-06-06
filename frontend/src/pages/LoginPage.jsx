@@ -4,10 +4,12 @@ import { useNavigate, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Icon } from '@iconify/react';
 import LoginOptions from "../components/LoginOptions";
+import { useAuth } from "../constants/AuthContext";
 
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
+  const { setUser, setAuthError } = useAuth();
   const [password, setPassword] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
   const [loading, setLoading] = useState(false);
@@ -18,6 +20,7 @@ export default function LoginPage() {
   const navigate = useNavigate();
   const [failedCount, setFailedCount] = useState(null);
   const [lockoutTimeLeft, setLockoutTimeLeft] = useState(0);
+
 
   useEffect(() => {
     localStorage.setItem("returnTo", "/login");
@@ -50,7 +53,13 @@ export default function LoginPage() {
     }, 1000);
     return () => clearInterval(interval);
   }, [lockoutUntil]);
+  const { user, isAuthenticated } = useAuth();
 
+  useEffect(() => {
+    if (isAuthenticated && user) {
+      navigate("/scan");
+    }
+  }, [isAuthenticated, user, navigate]);
   const validateEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
   const validatePassword = (pwd) =>
@@ -140,6 +149,7 @@ export default function LoginPage() {
         },
         body: JSON.stringify({ email: cleanEmail, password: cleanPassword }),
         signal: controller.signal,
+        credentials: "include",
       });
 
       clearTimeout(timeout);
@@ -162,11 +172,10 @@ export default function LoginPage() {
       }
 
       const data = await res.json();
-      if (data.token && data.csrfToken) {
-        localStorage.setItem("authToken", data.token);
-        localStorage.setItem("csrfToken", data.csrfToken);
+      if (data && data.user && data.message === "Login successful") {
         localStorage.removeItem("failCount");
         localStorage.removeItem("lockoutUntil");
+        setUser(data.user);
         navigate("/scan");
       } else {
         setErrorMsg("Invalid server response. Please try again.");

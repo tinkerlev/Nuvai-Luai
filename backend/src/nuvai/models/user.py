@@ -21,7 +21,8 @@ class User(Base):
     __tablename__ = 'users'
     id = Column(Integer, primary_key=True)
     email = Column(String(120), unique=True, nullable=False, index=True)
-    password = Column(String(255), nullable=False)
+    PsLuai = Column("PsLuai", String(255), nullable=True)
+    oauth_provider = Column(String(50), nullable=True)
     first_name = Column(String(50), nullable=True)
     last_name = Column(String(50), nullable=True)
     plan = Column(String(20), default="free", nullable=False)
@@ -45,11 +46,11 @@ class User(Base):
     )
 
     def set_password(self, raw_password: str):
-        self.password = generate_password_hash(raw_password)
+        self.PsLuai = generate_password_hash(raw_password)
         logger.debug(f"Password hashed for user {self.email}")
 
     def check_password(self, raw_password: str) -> bool:
-        return check_password_hash(self.password, raw_password)
+        return check_password_hash(self.PsLuai, raw_password)
 
     def mark_login_success(self):
         self.last_login = datetime.now(timezone.utc)
@@ -95,6 +96,7 @@ class User(Base):
         return f"<User(email={self.email}, verified={self.is_verified}, active={self.is_active})>"
 
     def has_valid_logo(self) -> bool:
+        
         if not self.logo_path:
             return False
         relative_path = os.path.normpath(self.logo_path.strip("/"))
@@ -113,3 +115,41 @@ class User(Base):
 
     def get_full_name(self) -> str:
         return f"{self.first_name or ''} {self.last_name or ''}".strip()    
+
+    @classmethod
+    def create_oauth_user(cls, email: str, name: str, provider: str):
+        """
+        Creates a new user from OAuth information and saves it.
+        This user will not have a password set initially.
+        """
+        logger.info(f"Creating new OAuth user. Email: {email}, Provider: {provider}")
+
+        name_parts = (name or "").split(" ", 1)
+        first_name = name_parts[0]
+        last_name = name_parts[1] if len(name_parts) > 1 else ""
+
+        # Create a new User instance. Notice no password is set.
+        new_user = cls(
+            email=email,
+            first_name=first_name,
+            last_name=last_name,
+            oauth_provider=provider,
+            is_verified=True,  # Users from OAuth are considered verified
+            role=UserRole.USER,
+            plan="free" # or any default
+        )
+        
+        # Save the new user to the database
+        try:
+            with db_session() as session:
+                session.add(new_user)
+                session.commit()
+                logger.info(f"OAuth User {new_user.email} created and saved.")
+                session.refresh(new_user) # To get the ID and other defaults
+                return new_user
+        except Exception as e:
+            logger.error(f"DB error creating OAuth user {email}: {e}")
+            # It's important to rollback in case of error
+            with db_session() as session:
+                session.rollback()
+            raise # Re-raise the exception to be handled by the caller

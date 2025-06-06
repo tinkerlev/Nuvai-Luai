@@ -72,9 +72,17 @@ def get_db():
 # === Initialize DB schema ===
 def init_db():
     try:
+        from src.nuvai.models import user 
         from src.nuvai.models import early_access
+        
+        logger.info("--- Starting init_db process ---")
+        logger.info(f"The following tables are known to Base.metadata: {Base.metadata.tables.keys()}")
+        logger.info("Attempting to run Base.metadata.create_all(bind=engine)...")
+        
         Base.metadata.create_all(bind=engine)
-        logger.info("📦 Database schema created.")
+        logger.info("✅✅✅ Base.metadata.create_all(bind=engine) FINISHED SUCCESSFULLY!")
+        logger.info("--- init_db process complete ---")
+        
     except Exception as e:
         logger.exception("❌ Failed to create database schema.")
         raise e

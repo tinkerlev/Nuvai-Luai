@@ -1,22 +1,5 @@
 # File: report_saver.py
 
-"""
-Description:
-This module provides functionality to export scan results from the Nuvai engine into various formats,
-allowing users to analyze or share findings easily. It supports saving reports in JSON, TXT, HTML,
-and PDF formats, and automatically creates a `security_reports/` directory in the user's home folder.
-
-Features:
-- Supports export formats: .json, .txt, .html, .pdf
-- Automatically names reports using a timestamp (e.g., scanner_2025-04-20_14-00-00.txt)
-- Creates export directory if it doesn't exist
-- Handles fallback for PDF generation dynamically inside the function
-- Adds a summary and highlights for critical issues
-- Displays and saves actionable recommendations
-
-Compatible with systems where pip is restricted (e.g., Kali Linux, Windows lockdowns).
-"""
-
 import os
 from datetime import datetime
 
@@ -83,7 +66,6 @@ def save_report(findings, extension):
         pdf.output(full_path)
 
     else:
-        print(f"❌ Unsupported format: {extension}")
         return None
 
     return full_path

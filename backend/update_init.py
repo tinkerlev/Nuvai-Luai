@@ -23,5 +23,3 @@ content = (
 
 with open(INIT_FILE, "w") as f:
     f.write(content)
-
-print(f"✅ {INIT_FILE} updated with {len(modules)} modules.")
