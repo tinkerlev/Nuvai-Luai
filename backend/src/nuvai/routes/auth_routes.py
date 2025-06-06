@@ -45,8 +45,9 @@ for name, config in ALLOWED_PROVIDERS.items():
 def login_provider(provider):
     provider = provider.lower().strip()
     if provider not in ALLOWED_PROVIDERS: abort(400, "Unsupported provider")
-    client = oauth.create_client(provider)
     redirect_uri = url_for("auth.callback_provider", provider=provider, _external=True)
+    print(f"!!! DEBUG: Generated Callback URL for {provider} is: {redirect_uri}")
+    client = oauth.create_client(provider)
     session['redirect_after_oauth'] = request.args.get('returnTo', '/scan')
     
     if provider == 'google':
@@ -59,11 +60,9 @@ def login_provider(provider):
 def callback_provider(provider):
     provider = provider.lower().strip()
     if provider not in ALLOWED_PROVIDERS: abort(400, "Unsupported provider")
-
     base_frontend_url = os.getenv("DEV_FRONTEND_URL", "http://localhost:3000")
     if os.getenv("NUVAI_ENV") == "production":
-        base_frontend_url = os.getenv("PROD_FRONTEND_URL", "https://luai.io")
-        
+        base_frontend_url = os.getenv("PROD_FRONTEND_URL", "https://luai.io") 
     return_to_path = session.pop('redirect_after_oauth', '/scan')
     
     try:

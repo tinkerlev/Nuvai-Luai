@@ -2,19 +2,15 @@
 import React, { createContext, useState, useEffect, useContext } from "react";
 
 export const AuthContext = createContext(null);
-
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [checkingAuth, setCheckingAuth] = useState(true);
   const [authError, setAuthError] = useState(null);
-
   const fetchAuthStatus = async () => {
-
     try {
       const response = await fetch(`${process.env.REACT_APP_API_URL}/auth/userinfo`, {
         credentials: "include",
-      });
-      
+      });   
       if (response.ok) {
         const data = await response.json();
         if (data && data.user) {
@@ -26,17 +22,14 @@ export const AuthProvider = ({ children }) => {
         setUser(null);
       }
     } catch (err) {
-      console.error("Error during initial auth check:", err);
       setUser(null);
     } finally {
       setCheckingAuth(false);
     }
   };
-  
   useEffect(() => {
     fetchAuthStatus();
   }, []); 
-
   const logout = async () => {
     try {
       await fetch(`${process.env.REACT_APP_API_URL}/auth/logout`, {
@@ -45,12 +38,9 @@ export const AuthProvider = ({ children }) => {
       });
       setUser(null);
       setAuthError(null);
-      console.info("👋 Logged out successfully");
     } catch (error) {
-      console.error("❌ Logout error:", error);
     }
   };
-
   const value = {
       user,
       setUser,
@@ -59,14 +49,12 @@ export const AuthProvider = ({ children }) => {
       refetchAuth: fetchAuthStatus,
       logout
   };
-
   return (
     <AuthContext.Provider value={value}>
       {children}
     </AuthContext.Provider>
   );
 };
-
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {
