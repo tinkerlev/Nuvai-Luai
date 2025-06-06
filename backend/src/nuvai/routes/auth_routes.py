@@ -45,7 +45,7 @@ for name, config in ALLOWED_PROVIDERS.items():
 def login_provider(provider):
     provider = provider.lower().strip()
     if provider not in ALLOWED_PROVIDERS: abort(400, "Unsupported provider")
-    redirect_uri = url_for("auth.callback_provider", provider=provider, _external=True)
+    redirect_uri = url_for("auth.callback_provider", provider=provider, _external=True, _scheme='https' if os.getenv("NUVAI_ENV") == "production" else 'http')
     print(f"!!! DEBUG: Generated Callback URL for {provider} is: {redirect_uri}")
     client = oauth.create_client(provider)
     session['redirect_after_oauth'] = request.args.get('returnTo', '/scan')
