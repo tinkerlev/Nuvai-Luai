@@ -1,18 +1,13 @@
 // UploadPage.jsx
 import React, { useState } from "react";
 import UploadForm from "../components/UploadForm";
-import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Icon } from '@iconify/react';
+import { useAuth } from "../constants/AuthContext";
 
 export default function App() {
+  const { user } = useAuth();
   const [results, setResults] = useState([]);
-  const navigate = useNavigate();
-  const [customLogo, setCustomLogo] = useState(() => {
-    const savedLogo = localStorage.getItem("customLogo");
-    return savedLogo || null;
-  });
-
   const handleScanResult = (fileName, result) => {
     setResults((prev) => [...prev, { fileName, result }]);
   };
@@ -56,48 +51,26 @@ export default function App() {
           initial="hidden"
           animate="visible"
           variants={fadeIn}
-          className="max-w-3xl mx-auto"
-        >
+          className="max-w-3xl mx-auto">
           <div className="card bg-base-100 shadow-xl border border-base-300 mb-8">
             <div className="card-body text-center">
               <div className="flex justify-center mb-2">
-                <div
-                  className={`relative w-20 h-20 rounded-full overflow-hidden group cursor-pointer bg-transparent ${
-                    customLogo ? '' : 'border-2 border-dashed border-primary'
-                  }`}
-                >
-                {customLogo ? (
-                  <img
-                    src={customLogo}
-                    alt="Custom Logo"
-                    className="object-contain w-full h-full"
-                  />
-                ) : (
-                  <div className="flex flex-col items-center justify-center w-full h-full text-primary/70">
-                    <Icon icon="mdi:camera-plus" className="w-8 h-8 mb-1" />
-                    <span className="text-xs">Upload Logo</span>
-                  </div>
-                )}
-                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                  <Icon icon="mdi:camera-outline" className="text-white w-6 h-6" />
+                <div className="w-20 h-20 rounded-full bg-base-300 flex items-center justify-center overflow-hidden">
+                  {user?.logoUrl ? (
+                      <img
+                          src={user.logoUrl}
+                          alt="User profile"
+                          className="w-full h-full object-cover"
+                          referrerPolicy="no-referrer"
+                      />
+                  ) : (
+                      <div className="w-full h-full flex items-center justify-center bg-amber-400 text-neutral-content">
+                          <span className="text-3xl font-semibold">
+                              {user?.initials || '..'}
+                          </span>
+                      </div>
+                  )}
                 </div>
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => {
-                    const file = e.target.files[0];
-                    if (!file) return;
-                    const reader = new FileReader();
-                    reader.onloadend = () => {
-                      const dataUrl = reader.result;
-                      setCustomLogo(dataUrl);
-                      localStorage.setItem("customLogo", dataUrl);
-                    };
-                    reader.readAsDataURL(file);
-                  }}
-                  className="absolute inset-0 opacity-0 cursor-pointer"
-                />
-              </div>
               </div>
               <h1 className="text-3xl font-bold mb-2 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
                 Luai Code Scanner
@@ -116,7 +89,6 @@ export default function App() {
               className="mb-8"
             >
               <h2 className="text-2xl font-bold mb-4 text-center">Scan Results</h2>
-
               {results.map((r, idx) => (
                 <motion.div
                   key={idx}

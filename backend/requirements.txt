@@ -19,3 +19,4 @@ pip>=25.1.1
 flask-jwt-extended>=4.7.1
 authlib>=1.6.0
 requests>=2.32.3
+stripe>=12.2.0

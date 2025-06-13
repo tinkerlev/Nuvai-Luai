@@ -2,10 +2,13 @@
 
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import { useStripe } from '@stripe/react-stripe-js';
 import { motion } from "framer-motion";
 import { Icon } from '@iconify/react';
 
 export default function RegisterPage() {
+  const stripe = useStripe();
+  const navigate = useNavigate();
   const [form, setForm] = useState({
     firstName: "",
     lastName: "",
@@ -15,13 +18,13 @@ export default function RegisterPage() {
     confirmPassword: "",
     profession: "",
     company: "",
-    plan: "monthly"
+    plan: "Free"
   });
   const [errorMsg, setErrorMsg] = useState("");
   const [loading, setLoading] = useState(false);
   const [lastSubmitTime, setLastSubmitTime] = useState(0);
   const [acceptTerms, setAcceptTerms] = useState(false);
-  const navigate = useNavigate();
+
 
   const sanitizeInput = (input) => input.replace(/[<>"']/g, "").normalize("NFKC");
   const escapeHTML = (str) => str.replace(/</g, "&lt;").replace(/>/g, "&gt;");
@@ -87,13 +90,10 @@ export default function RegisterPage() {
     try {
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), 40000);
-
       const csrfToken = localStorage.getItem("csrfToken") || "";
-
       const apiUrl = process.env.REACT_APP_API_URL;
       console.log("API URL:", apiUrl);
       const res = await fetch(`${apiUrl}/auth/register`, {
-
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -113,8 +113,44 @@ export default function RegisterPage() {
         setLoading(false);
         return;
       }
+      console.log("User successfully registered, now proceeding to payment...");
 
-      navigate("/login");
+    if (form.plan === 'Free') {
+      console.log("Free plan selected. Redirecting to login.");
+      navigate("/login?registration=success");
+      return;
+    }
+
+    const priceIdMap = {
+      'SoloMonthly': process.env.REACT_APP_STRIPE_PRICE_ID_SOLO_MONTHLY,
+      'SoloYearly': process.env.REACT_APP_STRIPE_PRICE_ID_SOLO_YEARLY,
+      'PROBusiness': process.env.REACT_APP_STRIPE_PRICE_ID_PRO_BUSINESS
+    };
+
+    const priceId = priceIdMap[form.plan];
+     
+    if (!priceId) {
+        throw new Error("Invalid plan selected for payment.");
+    }
+    
+    const checkoutResponse = await fetch(`${process.env.REACT_APP_API_URL}/create-checkout-session`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ 
+        priceId: priceId, 
+        customerEmail: form.email 
+      })
+    });
+
+    const sessionData = await checkoutResponse.json();
+    if (!checkoutResponse.ok) throw new Error(sessionData.error);
+
+    const { error: stripeError } = await stripe.redirectToCheckout({
+      sessionId: sessionData.id,
+    });
+
+    if (stripeError) throw new Error(stripeError.message);
+
     } catch (err) {
       if (err.name === "AbortError") {
         setErrorMsg("Request timed out. Please try again.");
@@ -321,9 +357,10 @@ export default function RegisterPage() {
                     onChange={handleChange}
                     className="select select-bordered w-full"
                   >
-                    <option value="monthly">📆 Monthly Plan</option>
-                    <option value="yearly">📅 Yearly Plan</option>
-                    <option value="business">🏢 Business Plan</option>
+                    <option value="Free">Basic Plan for Free</option>
+                    <option value="SoloMonthly">Solo Monthly</option>
+                    <option value="SoloYearly">Solo Yearly</option>
+                    <option value="PROBusiness">PRO Business</option>
                   </select>
                 </motion.div>
                 
@@ -350,7 +387,6 @@ export default function RegisterPage() {
                   <span>{errorMsg}</span>
                 </motion.div>
               )}
-              
               <button
                 type="submit"
                 disabled={loading || !acceptTerms}
@@ -369,9 +405,7 @@ export default function RegisterPage() {
                 )}
               </button>
             </form>
-            
             <div className="divider my-4"></div>
-            
             <div className="text-center">
               <p className="text-sm">
                 Already have an account?{" "}
