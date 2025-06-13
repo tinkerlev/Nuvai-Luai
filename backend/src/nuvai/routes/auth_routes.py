@@ -154,6 +154,7 @@ def get_user_info():
     current_user_email = get_jwt_identity()
     user = User.get_by_email(current_user_email)
     if not user: return jsonify(msg="User not found"), 404
+    logo_url = user.get_logo_url()
     return jsonify({
         "authenticated": True,
         "user": {
@@ -161,7 +162,7 @@ def get_user_info():
             "phone": user.phone, "profession": user.profession, "company": user.company,
             "fullName": user.get_full_name(), "plan": user.plan, "role": user.role,
             "provider": user.oauth_provider or "email", "logoUrl": user.get_logo_url(),
-            "initials": f"{user.first_name[0] if user.first_name else ''}{user.last_name[0] if user.last_name else ''}".upper(),
+            "initials": f"{user.first_name[0] if user.first_name else ''}{user.last_name[0] if user.last_name else ''}".upper(), "logoUrl": logo_url
         }
     }), 200
     
@@ -184,23 +185,40 @@ def update_profile_picture():
     current_user_email = get_jwt_identity()
     user = User.get_by_email(current_user_email)
     if not user: return jsonify(msg="User not found"), 404
-    if 'profile_picture' not in request.files: return jsonify(msg="No file part"), 400
+
+    if 'profile_picture' not in request.files: return jsonify(msg="No profile_picture file part"), 400
     file = request.files['profile_picture']
     if file.filename == '': return jsonify(msg="No selected file"), 400
-    allowed_extensions = {'png', 'jpg', 'jpeg', 'gif'};
-    if '.' not in file.filename or file.filename.rsplit('.', 1)[1].lower() not in allowed_extensions: return jsonify(msg="Invalid file type"), 400
+    
+    allowed_extensions = {'png', 'jpg', 'jpeg', 'gif'}
+    if '.' not in file.filename or file.filename.rsplit('.', 1)[1].lower() not in allowed_extensions:
+        return jsonify(msg="Invalid file type"), 400
+    
     try:
-        if user.logo_path and 'user_logos' in user.logo_path and os.path.exists(os.path.join("static", user.logo_path)):
+        if user.logo_path and os.path.exists(os.path.join("static", user.logo_path)):
              os.remove(os.path.join("static", user.logo_path))
+
         filename = f"user_{user.id}_{secrets.token_hex(8)}.{secure_filename(file.filename.rsplit('.', 1)[1].lower())}"
-        logos_dir = os.path.join("static", "user_logos"); os.makedirs(logos_dir, exist_ok=True)
+        logos_dir = os.path.join("static", "user_logos")
+        os.makedirs(logos_dir, exist_ok=True)
         file_path = os.path.join(logos_dir, filename)
+
         file.save(file_path)
-        user.logo_path = os.path.join("user_logos", filename).replace("\\", "/"); user.save()
-        return jsonify({ "message": "Profile picture updated", "newLogoUrl": user.get_logo_url() }), 200
+
+        user.logo_path = os.path.join("user_logos", filename).replace("\\", "/")
+        user.save()
+        
+        new_logo_url = f"/user-logo/{filename}"
+        logger.info(f"Sending logo URL to client: {new_logo_url}")
+
+        return jsonify({
+            "message": "Profile picture updated",
+            "newLogoUrl": new_logo_url
+        }), 200
+
     except Exception as e:
         logger.error(f"Picture upload failed for {user.email}: {e}")
-        return jsonify(msg="Server error"), 500
+        return jsonify(msg="Server error during file upload"), 500
 
 @auth_blueprint.route("/webhooks/stripe", methods=['POST'])
 def stripe_webhook():
@@ -208,7 +226,9 @@ def stripe_webhook():
     endpoint_secret = os.getenv('STRIPE_WEBHOOK_SECRET')
     try:
         event = stripe.Webhook.construct_event(payload, sig_header, endpoint_secret)
-    except Exception as e: return jsonify(status='error'), 400
+    except Exception as e:
+        logger.error(f"Stripe webhook error: {e}")
+        return jsonify(status='error'), 400
     if event['type'] == 'checkout.session.completed':
         session = event['data']['object']
     return jsonify(status='success'), 200

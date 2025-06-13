@@ -11,26 +11,55 @@ const ProfilePictureSettings = () => {
     const handleFileChange = async (event) => {
         const file = event.target.files[0];
         if (!file) return;
-        setError(''); setIsUploading(true);
+
+        setError('');
+        setIsUploading(true);
         const formData = new FormData();
         formData.append('profile_picture', file);
+
         try {
-            const response = await fetch(`${process.env.REACT_APP_API_URL}/auth/update-profile-picture`, {
-                method: 'POST', body: formData, credentials: 'include'
+            const uploadResponse = await fetch(`${process.env.REACT_APP_API_URL}/auth/update-profile-picture`, {
+                method: 'POST',
+                body: formData,
+                credentials: 'include'
             });
-            const data = await response.json();
-            if (!response.ok) throw new Error(data.msg || 'Upload failed');
-            setUser(prevUser => ({ ...prevUser, logoUrl: data.newLogoUrl }));
-        } catch (err) { setError(err.message); } finally { setIsUploading(false); }
+            
+            const uploadData = await uploadResponse.json();
+            if (!uploadResponse.ok) {
+                throw new Error(uploadData.msg || 'Upload failed');
+            }
+
+            setUser(prevUser => {
+                const updatedUser = { ...prevUser, logoUrl: uploadData.newLogoUrl };
+                return updatedUser;
+            });
+
+        } catch (err) {
+            setError(err.message);
+        } finally {
+            setIsUploading(false);
+        }
     };
+
     return (
         <div className="card bg-base-200 p-6 shadow-md">
             <h2 className="text-xl font-bold mb-4">Profile Picture</h2>
             <div className="flex items-center gap-6">
                 <div className="avatar">
-                    <div className="w-24 rounded-full ring ring-primary ring-offset-base-100 ring-offset-2">
-                        <img src={user?.logoUrl} alt="Profile" />
-                    </div>
+                <div className="w-24 h-24 rounded-full ring ring-primary ring-offset-base-100 ring-offset-2 overflow-hidden bg-neutral text-neutral-content flex items-center justify-center">
+                {user?.logoUrl && !user.logoUrl.includes("default_logo") ? (
+                <img
+                    src={`${process.env.REACT_APP_API_URL}${user.logoUrl}`}
+                    alt="Profile"
+                    className="w-full h-full object-cover"
+                />
+                ) : (
+                <span className="text-3xl font-bold">
+                    {user?.initials ? user.initials.substring(0, 2).toUpperCase() : "??"}
+                </span>
+                )}
+
+                </div>
                 </div>
                 <div>
                     <input type="file" ref={fileInputRef} onChange={handleFileChange} accept="image/*" className="hidden" disabled={isUploading} />

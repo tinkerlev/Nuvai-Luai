@@ -2,6 +2,8 @@
 
 import os
 from datetime import datetime, timezone
+import requests
+import secrets
 from enum import Enum
 from sqlalchemy import (
     Column, Integer, String, Boolean, DateTime,
@@ -12,11 +14,36 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from src.nuvai.core.db import Base, db_session
 from src.nuvai.utils.logger import get_logger
 
+
 logger = get_logger("UserModel")
 
 class UserRole(str, Enum):
     USER = "user"
     ADMIN = "admin"
+
+def download_and_save_oauth_logo(url: str, user_id: int) -> str:
+    try:
+        response = requests.get(url, timeout=5)
+        if response.status_code != 200:
+            logger.warning(f"Failed to download external logo for user {user_id}")
+            return None
+
+        ext = url.split('.')[-1].split('?')[0].lower()
+        if ext not in ['jpg', 'jpeg', 'png', 'gif']:
+            ext = 'jpg'
+
+        filename = f"user_{user_id}_{secrets.token_hex(8)}.{ext}"
+        logos_dir = os.path.join("static", "user_logos")
+        os.makedirs(logos_dir, exist_ok=True)
+        file_path = os.path.join(logos_dir, filename)
+
+        with open(file_path, 'wb') as f:
+            f.write(response.content)
+
+        return os.path.join("user_logos", filename).replace("\\", "/")
+    except Exception as e:
+        logger.error(f"Error downloading logo for user {user_id}: {e}")
+        return None
 
 class User(Base):
     __tablename__ = 'users'
@@ -32,12 +59,8 @@ class User(Base):
     profession = Column(String(50), nullable=True)
     company = Column(String(50), nullable=True)
     logo_path = Column(String(255), nullable=True)
-    
-    # --- השדות החדשים שהוספנו ---
     stripe_customer_id = Column(String(120), unique=True, nullable=True, index=True)
-    stripe_subscription_id = Column(String(120), unique=True, nullable=True, index=True)
-    # --- סוף השדות החדשים ---
-    
+    stripe_subscription_id = Column(String(120), unique=True, nullable=True, index=True)    
     is_verified = Column(Boolean, default=False)
     role = Column(SqlEnum(UserRole), default=UserRole.USER, nullable=False)
     is_active = Column(Boolean, default=True)
@@ -62,11 +85,10 @@ class User(Base):
             return False
         return check_password_hash(self.PsLuai, raw_password)
 
-    # ... שאר הפונקציות של המודל נשארות זהות ...
     def mark_login_success(self):
         self.last_login = datetime.now(timezone.utc)
         self.failed_logins = 0
-        self.save() # It's good practice to save the state change
+        self.save()
         logger.info(f"Successful login recorded for user {self.email}")
 
     def mark_login_failure(self):
@@ -74,7 +96,7 @@ class User(Base):
         logger.warning(f"Failed login attempt #{self.failed_logins} for {self.email}")
         if self.failed_logins >= 5:
             self.lock_account()
-        self.save() # Save the increased failure count
+        self.save()
 
     def lock_account(self):
         self.is_active = False
@@ -144,17 +166,23 @@ class User(Base):
         last_name = name_parts[1] if len(name_parts) > 1 else ""
         new_user = cls(
             email=email, first_name=first_name, last_name=last_name,
-            oauth_provider=provider, logo_path=logo_url, is_verified=True, role=UserRole.USER, plan="free"
+            oauth_provider=provider, logo_path=None, is_verified=True, role=UserRole.USER, plan="free"
         )
         try:
             with db_session() as session:
                 session.add(new_user)
+                session.commit()
+                
+                if logo_url:
+                    saved_path = download_and_save_oauth_logo(logo_url, new_user.id)
+                    if saved_path:
+                        new_user.logo_path = saved_path
+                        session.add(new_user)
+
                 session.commit()
                 logger.info(f"OAuth User {new_user.email} created and saved.")
                 session.refresh(new_user)
                 return new_user
         except Exception as e:
             logger.error(f"DB error creating OAuth user {email}: {e}")
-            with db_session() as session:
-                session.rollback()
             raise

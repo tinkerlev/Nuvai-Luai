@@ -55,21 +55,20 @@ export default function App() {
           <div className="card bg-base-100 shadow-xl border border-base-300 mb-8">
             <div className="card-body text-center">
               <div className="flex justify-center mb-2">
-                <div className="w-20 h-20 rounded-full bg-base-300 flex items-center justify-center overflow-hidden">
-                  {user?.logoUrl ? (
-                      <img
-                          src={user.logoUrl}
-                          alt="User profile"
-                          className="w-full h-full object-cover"
-                          referrerPolicy="no-referrer"
-                      />
-                  ) : (
-                      <div className="w-full h-full flex items-center justify-center bg-amber-400 text-neutral-content">
-                          <span className="text-3xl font-semibold">
-                              {user?.initials || '..'}
-                          </span>
-                      </div>
-                  )}
+                <div className="w-20 h-20 rounded-full overflow-hidden flex items-center justify-center">
+                {user?.logoUrl ? (
+                  <img
+                    src={user.logoUrl.startsWith("http") ? user.logoUrl : `${process.env.REACT_APP_API_URL}${user.logoUrl}`}
+                    alt="User profile"
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center bg-neutral-focus text-neutral-content rounded-full ring ring-primary ring-offset-base-100 ring-offset-2">
+                    <span className="text-sm font-bold">
+                      {user?.initials ? user.initials.substring(0, 2).toUpperCase() : "??"}
+                    </span>
+                  </div>
+                )}
                 </div>
               </div>
               <h1 className="text-3xl font-bold mb-2 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
