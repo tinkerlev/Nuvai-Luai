@@ -6,7 +6,7 @@ export default function UploadForm({ onScan }) {
   const [errorMsg, setErrorMsg] = useState("");
   const [lastUploadTime, setLastUploadTime] = useState(0);
   const [hashCache, setHashCache] = useState(new Set());
-  const [scanResults, setScanResults] = useState([]);
+  const [ setScanResults] = useState([]);
   const fileInputRef = useRef();
 
   const MAX_FILES = 5;

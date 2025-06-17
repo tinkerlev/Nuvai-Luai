@@ -202,13 +202,12 @@ def update_profile_picture():
         logos_dir = os.path.join("static", "user_logos")
         os.makedirs(logos_dir, exist_ok=True)
         file_path = os.path.join(logos_dir, filename)
-
         file.save(file_path)
 
-        user.logo_path = os.path.join("user_logos", filename).replace("\\", "/")
+        user.logo_path = f"static/user_logos/{filename}"
         user.save()
-        
-        new_logo_url = f"/user-logo/{filename}"
+
+        new_logo_url = f"/static/user_logos/{filename}"
         logger.info(f"Sending logo URL to client: {new_logo_url}")
 
         return jsonify({
@@ -219,6 +218,35 @@ def update_profile_picture():
     except Exception as e:
         logger.error(f"Picture upload failed for {user.email}: {e}")
         return jsonify(msg="Server error during file upload"), 500
+
+@auth_blueprint.route('/delete-profile-picture', methods=['POST'])
+@jwt_required()
+def delete_profile_picture():
+    current_user_email = get_jwt_identity()
+    user = User.get_by_email(current_user_email)
+    if not user:
+        return jsonify({"error": "User not found"}), 404
+    if not user.logo_path:
+        return jsonify({"message": "No profile picture to delete."}), 200
+
+    try:
+        file_to_delete = os.path.join("static", user.logo_path)
+        if os.path.exists(file_to_delete):
+            os.remove(file_to_delete)
+            logger.info(f"Deleted physical logo file for user {user.email}: {file_to_delete}")
+        else:
+            logger.warning(f"Logo file not found for user {user.email}, but DB entry existed: {file_to_delete}")
+
+        user.logo_path = None
+        user.save()
+        
+        logger.info(f"Profile picture database path cleared for user {user.email}")
+        
+        return jsonify({"message": "Profile picture deleted successfully"}), 200
+
+    except Exception as e:
+        logger.error(f"Error deleting profile picture for user {user.email}: {str(e)}")
+        return jsonify({"error": "An internal error occurred while deleting the picture."}), 500
 
 @auth_blueprint.route("/webhooks/stripe", methods=['POST'])
 def stripe_webhook():

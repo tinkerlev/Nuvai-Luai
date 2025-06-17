@@ -21,30 +21,6 @@ class UserRole(str, Enum):
     USER = "user"
     ADMIN = "admin"
 
-def download_and_save_oauth_logo(url: str, user_id: int) -> str:
-    try:
-        response = requests.get(url, timeout=5)
-        if response.status_code != 200:
-            logger.warning(f"Failed to download external logo for user {user_id}")
-            return None
-
-        ext = url.split('.')[-1].split('?')[0].lower()
-        if ext not in ['jpg', 'jpeg', 'png', 'gif']:
-            ext = 'jpg'
-
-        filename = f"user_{user_id}_{secrets.token_hex(8)}.{ext}"
-        logos_dir = os.path.join("static", "user_logos")
-        os.makedirs(logos_dir, exist_ok=True)
-        file_path = os.path.join(logos_dir, filename)
-
-        with open(file_path, 'wb') as f:
-            f.write(response.content)
-
-        return os.path.join("user_logos", filename).replace("\\", "/")
-    except Exception as e:
-        logger.error(f"Error downloading logo for user {user_id}: {e}")
-        return None
-
 class User(Base):
     __tablename__ = 'users'
     
@@ -152,14 +128,23 @@ class User(Base):
 
     def get_logo_url(self) -> str:
         if self.logo_path and self.has_valid_logo():
-            return f"/{self.logo_path.strip('/')}"
+            return f"/static/{self.logo_path.strip('/')}"
         return "/static/default_logo.png"
 
     def get_full_name(self) -> str:
         return f"{self.first_name or ''} {self.last_name or ''}".strip()    
 
+    @property
+    def initials(self) -> str:
+        initials_str = ""
+        if self.first_name:
+            initials_str += self.first_name[0]
+        if self.last_name:
+            initials_str += self.last_name[0]        
+        return initials_str.upper()
+
     @classmethod
-    def create_oauth_user(cls, email: str, name: str, provider: str, logo_url: str = None):
+    def create_oauth_user(cls, email: str, name: str, provider: str):
         logger.info(f"Creating new OAuth user. Email: {email}, Provider: {provider}")
         name_parts = (name or "").split(" ", 1)
         first_name = name_parts[0]
@@ -173,13 +158,6 @@ class User(Base):
                 session.add(new_user)
                 session.commit()
                 
-                if logo_url:
-                    saved_path = download_and_save_oauth_logo(logo_url, new_user.id)
-                    if saved_path:
-                        new_user.logo_path = saved_path
-                        session.add(new_user)
-
-                session.commit()
                 logger.info(f"OAuth User {new_user.email} created and saved.")
                 session.refresh(new_user)
                 return new_user

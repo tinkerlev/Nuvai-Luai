@@ -9,7 +9,7 @@ import { useAuth } from "../constants/AuthContext";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
-  const { setUser, setAuthError } = useAuth();
+  const { setUser } = useAuth();
   const [password, setPassword] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
   const [loading, setLoading] = useState(false);

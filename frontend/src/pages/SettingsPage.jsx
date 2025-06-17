@@ -1,12 +1,21 @@
 // SettingsPage.jsx
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useAuth } from '../constants/AuthContext';
 
 const ProfilePictureSettings = () => {
     const { user, setUser } = useAuth();
     const [isUploading, setIsUploading] = useState(false);
+    const [isDeleting, setIsDeleting] = useState(false);
     const [error, setError] = useState('');
     const fileInputRef = useRef(null);
+    const isMounted = useRef(false);
+
+    useEffect(() => {
+        isMounted.current = true;
+        return () => {
+            isMounted.current = false;
+        };
+    }, []);
 
     const handleFileChange = async (event) => {
         const file = event.target.files[0];
@@ -29,15 +38,54 @@ const ProfilePictureSettings = () => {
                 throw new Error(uploadData.msg || 'Upload failed');
             }
 
-            setUser(prevUser => {
-                const updatedUser = { ...prevUser, logoUrl: uploadData.newLogoUrl };
-                return updatedUser;
+            if (isMounted.current) {
+                setUser(prevUser => {
+                    const updatedUser = { ...prevUser, logoUrl: uploadData.newLogoUrl };
+                    return updatedUser;
+                });
+            }
+        } catch (err) {
+            if (isMounted.current) {
+                setError(err.message);
+            }
+        } finally {
+            if (isMounted.current) {
+                setIsUploading(false);
+            }
+        }
+    };
+
+        const handleDeletePicture = async () => {
+        if (isUploading || isDeleting) return;
+
+        setIsDeleting(true);
+        setError('');
+
+        try {
+            const response = await fetch(`${process.env.REACT_APP_API_URL}/auth/delete-profile-picture`, {
+                method: 'POST',
+                credentials: 'include'
             });
 
+            const data = await response.json();
+            if (!response.ok) {
+                throw new Error(data.error || 'Failed to delete picture.');
+            }
+
+            if (isMounted.current) {
+                setUser(prevUser => ({
+                    ...prevUser,
+                    logoUrl: null
+                }));
+            }
         } catch (err) {
-            setError(err.message);
+            if (isMounted.current) {
+                setError(err.message);
+            }
         } finally {
-            setIsUploading(false);
+            if (isMounted.current) {
+                setIsDeleting(false);
+            }
         }
     };
 
@@ -46,25 +94,30 @@ const ProfilePictureSettings = () => {
             <h2 className="text-xl font-bold mb-4">Profile Picture</h2>
             <div className="flex items-center gap-6">
                 <div className="avatar">
-                <div className="w-24 h-24 rounded-full ring ring-primary ring-offset-base-100 ring-offset-2 overflow-hidden bg-neutral text-neutral-content flex items-center justify-center">
-                {user?.logoUrl && !user.logoUrl.includes("default_logo") ? (
-                <img
-                    src={`${process.env.REACT_APP_API_URL}${user.logoUrl}`}
-                    alt="Profile"
-                    className="w-full h-full object-cover"
-                />
-                ) : (
-                <span className="text-3xl font-bold">
-                    {user?.initials ? user.initials.substring(0, 2).toUpperCase() : "??"}
-                </span>
-                )}
-
-                </div>
+                    <div className="w-24 h-24 rounded-full ring ring-primary ring-offset-base-100 ring-offset-2 bg-neutral text-neutral-content">
+                        {user?.logoUrl && !user.logoUrl.includes("default_logo") ? (
+                            <img src={`${process.env.REACT_APP_API_URL}${user.logoUrl}`} alt="Profile" className="w-full h-full object-cover" />
+                        ) : (
+                            <div className="w-full h-full flex items-center justify-center">
+                                <span className="text-3xl font-bold">
+                                    {user?.initials ? user.initials.substring(0, 2).toUpperCase() : "??"}
+                                </span>
+                            </div>
+                        )}
+                    </div>
                 </div>
                 <div>
-                    <input type="file" ref={fileInputRef} onChange={handleFileChange} accept="image/*" className="hidden" disabled={isUploading} />
-                    <button onClick={() => fileInputRef.current.click()} className={`btn btn-primary ${isUploading ? "loading" : ""}`} disabled={isUploading}>Change Picture</button>
-                    <p className="text-xs text-base-content/60 mt-2">.png, .jpg, .gif up to 2MB</p>
+                    <input type="file" ref={fileInputRef} onChange={handleFileChange} accept="image/*" className="hidden" disabled={isUploading || isDeleting} />
+                    <div className="flex flex-col gap-2">
+                        <button onClick={() => fileInputRef.current.click()} className={`btn btn-primary ${isUploading ? "loading" : ""}`} disabled={isUploading || isDeleting}>Change Picture</button>
+                        <p className="text-xs text-base-content/60 mt-2">.png, .jpg, .gif up to 2MB</p>
+                        {user?.logoUrl && (
+
+                            <button onClick={handleDeletePicture} className={`btn btn-error btn-outline ${isDeleting ? "loading" : ""}`} disabled={isUploading || isDeleting}>
+                                Delete
+                            </button>
+                        )}
+                </div>
                 </div>
             </div>
             {error && <div className="text-error mt-2">{error}</div>}
@@ -84,6 +137,14 @@ const ProfileSettings = () => {
         profession: user?.profession || '',
         company: user?.company || '',
     });
+    const isMounted = useRef(false);
+
+    useEffect(() => {
+        isMounted.current = true;
+        return () => {
+            isMounted.current = false;
+        };
+    }, []);
 
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -98,9 +159,19 @@ const ProfileSettings = () => {
             });
             const data = await response.json();
             if (!response.ok) throw new Error(data.error || 'Failed to update profile.');
-            setSuccess('Profile updated successfully!');
-            setUser(prevUser => ({ ...prevUser, ...data.user }));
-        } catch (err) { setError(err.message); } finally { setIsLoading(false); }
+            if (isMounted.current) {
+                    setSuccess('Profile updated successfully!');
+                    setUser(prevUser => ({ ...prevUser, ...data.user }));
+                }
+            } catch (err) { 
+                if (isMounted.current) {
+                    setError(err.message);
+                }
+            } finally { 
+                if (isMounted.current) {
+                    setIsLoading(false);
+                }
+            }
     };
 
     return (

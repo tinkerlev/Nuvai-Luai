@@ -1,4 +1,4 @@
-# server.py (Truly Full and Corrected Version for Copy-Paste)
+# server.py 
 
 import sys
 import os
@@ -14,14 +14,9 @@ from flask import Flask, request, jsonify, send_from_directory, abort
 from flask_cors import CORS
 from werkzeug.utils import secure_filename
 from flask_jwt_extended import JWTManager, jwt_required, get_jwt_identity
-
-# --- CORRECTED IMPORTS ---
-# We ONLY import blueprints and the oauth object. We let them handle their own internal logic.
-from src.nuvai.routes.auth_routes import auth_blueprint, oauth  # << IMPORTING a single, correct 'oauth' object
+from src.nuvai.routes.auth_routes import auth_blueprint, oauth
 from src.nuvai.routes.reset_password_secure import reset_blueprint
 from src.nuvai.routes.early_access_routes import early_access_blueprint
-# WE DO NOT import `oauth_bp` as it's the suspected duplicate/conflicting blueprint.
-
 from config import get_config, validate_config
 from src.nuvai import scan_code
 from src.nuvai.utils.get_language import get_language
@@ -30,8 +25,6 @@ from src.nuvai.core.db import init_db
 from src.nuvai.models.user import User
 
 logger = get_logger(__name__)
-
-# --- THE REST OF YOUR FILE IS 100% IDENTICAL, ONLY THE BLUEPRINT SECTION IS CHANGED ---
 
 ENVIRONMENT = os.getenv("ENV", "development").lower()
 log_level = logging.INFO if ENVIRONMENT == "production" else logging.DEBUG
@@ -113,32 +106,6 @@ def create_app():
             "favicon.ico",
             mimetype="image/vnd.microsoft.icon"
         )
-
-    @app.route("/user-logo/<filename>", methods=["GET"])
-    @jwt_required()
-    @method_check(["GET"])
-    def get_user_logo(filename):
-        if rate_limit_check():
-            return jsonify({"error": "Too many requests"}), 429
-        user_email = get_jwt_identity()
-        filename = secure_filename(filename)
-        user = User.get_by_email(user_email)
-        if not user or not user.logo_path:
-            logger.warning(f"No user or logo for {user_email}")
-            return jsonify({"error": "Unauthorized or no logo"}), 403
-        if filename not in user.logo_path:
-            logger.warning(f"User {user_email} attempted to access another user's logo: {filename}")
-            return jsonify({"error": "Unauthorized access"}), 403
-        relative_path = os.path.normpath(filename)
-        absolute_logo_path = os.path.abspath(os.path.join("static", "user_logos", relative_path))
-        static_root = os.path.abspath(os.path.join("static", "user_logos"))
-        if not absolute_logo_path.startswith(static_root):
-            logger.warning(f"Directory traversal attempt by {user_email}: {absolute_logo_path}")
-            return jsonify({"error": "Access denied"}), 403
-        if not os.path.isfile(absolute_logo_path):
-            logger.warning(f"Logo file '{filename}' not found for user {user_email}")
-            return jsonify({"error": "Logo file not found"}), 404
-        return send_from_directory(static_root, filename)
 
     jwt = JWTManager(app)
     @app.route("/")

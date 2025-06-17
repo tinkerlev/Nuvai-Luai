@@ -18,17 +18,18 @@ const UserMenu = () => {
       <label tabIndex={0} className="btn btn-ghost btn-circle avatar">
         {user?.logoUrl && !user.logoUrl.includes("default_logo") ? (
           <div className="w-10 h-10 rounded-full overflow-hidden">
-            <img
-              src={`${process.env.REACT_APP_API_URL}${user.logoUrl}`}
-              alt="Avatar"
-              className="w-full h-full object-cover"
-            />
+            <img 
+            src={`${process.env.REACT_APP_API_URL}${user.logoUrl}`} 
+            alt="Avatar" 
+            className="w-full h-full object-cover"/>
           </div>
         ) : (
-          <div className="w-10 h-10 rounded-full ring ring-primary ring-offset-base-100 ring-offset-2 overflow-hidden bg-neutral-focus text-neutral-content flex items-center justify-center">
-            <span className="text-sm font-bold">
-              {user?.initials?.substring(0, 2).toUpperCase() || "??"}
-            </span>
+          <div className="w-10 h-10 rounded-full ring ring-primary ring-offset-base-100 ring-offset-2 bg-neutral-focus text-neutral-content overflow-hidden">
+              <div className="w-full h-full flex items-center justify-center">
+                  <span className="text-sm font-bold">
+                      {user?.initials?.substring(0, 2).toUpperCase() || "??"}
+                  </span>
+              </div>
           </div>
         )}
       </label>

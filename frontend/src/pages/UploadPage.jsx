@@ -53,22 +53,22 @@ export default function App() {
           variants={fadeIn}
           className="max-w-3xl mx-auto">
           <div className="card bg-base-100 shadow-xl border border-base-300 mb-8">
-            <div className="card-body text-center">
-              <div className="flex justify-center mb-2">
-                <div className="w-20 h-20 rounded-full overflow-hidden flex items-center justify-center">
-                {user?.logoUrl ? (
-                  <img
-                    src={user.logoUrl.startsWith("http") ? user.logoUrl : `${process.env.REACT_APP_API_URL}${user.logoUrl}`}
-                    alt="User profile"
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center bg-neutral-focus text-neutral-content rounded-full ring ring-primary ring-offset-base-100 ring-offset-2">
-                    <span className="text-sm font-bold">
-                      {user?.initials ? user.initials.substring(0, 2).toUpperCase() : "??"}
-                    </span>
-                  </div>
-                )}
+            <div className="card-body flex flex-col items-center">
+              <div className="mb-4">
+                <div className="w-24 h-24 rounded-full overflow-hidden">
+                  {user?.logoUrl && !user.logoUrl.includes("default_logo") ? (
+                    <img
+                      src={`${process.env.REACT_APP_API_URL}${user.logoUrl}`}
+                      alt="User profile"
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-full bg-neutral-focus text-neutral-content flex items-center justify-center ring ring-primary ring-offset-base-100 ring-offset-2 rounded-full">
+                      <span className="text-3xl font-bold">
+                        {user?.initials?.substring(0, 2).toUpperCase() || "??"}
+                      </span>
+                    </div>
+                  )}
                 </div>
               </div>
               <h1 className="text-3xl font-bold mb-2 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
