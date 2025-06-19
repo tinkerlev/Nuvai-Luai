@@ -1,64 +1,76 @@
-// file: AuthContext.jsx
+// AuthContext.jsx
 import React, { createContext, useState, useEffect, useContext } from "react";
-
-export const AuthContext = createContext(null);
+export const AuthContext = createContext(undefined);
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [checkingAuth, setCheckingAuth] = useState(true);
   const [authError, setAuthError] = useState(null);
+
   const fetchAuthStatus = async () => {
     try {
-      const response = await fetch(`${process.env.REACT_APP_API_URL}/auth/userinfo`, {
+      const res = await fetch(`${process.env.REACT_APP_API_URL}/auth/userinfo`, {
+        method: "GET",
         credentials: "include",
-      });   
-      if (response.ok) {
-        const data = await response.json();
-        if (data && data.user) {
-          setUser(data.user);
-        } else {
-          setUser(null);
+        headers: {
+          "Content-Type": "application/json"
         }
-      } else {
-        setUser(null);
-      }
+      });
+
+      if (!res.ok) throw new Error("Unauthorized");
+
+      const { user } = await res.json();
+      setUser(user || null);
+      console.log("user from server", user);
     } catch (err) {
+      if (process.env.NODE_ENV === "development") {
+        console.error("Auth error:", err.message);
+      }
       setUser(null);
+      setAuthError("Auth error");
     } finally {
       setCheckingAuth(false);
     }
   };
+
   useEffect(() => {
     fetchAuthStatus();
-  }, []); 
+  }, []);
+  
+
   const logout = async () => {
     try {
       await fetch(`${process.env.REACT_APP_API_URL}/auth/logout`, {
         method: "POST",
-        credentials: "include",
+        credentials: "include"
       });
+    } catch (e) {
+      console.warn("Logout failed silently.");
+    } finally {
       setUser(null);
       setAuthError(null);
-    } catch (error) {
     }
   };
-  const value = {
-      user,
-      setUser,
-      checkingAuth,
-      authError,
-      refetchAuth: fetchAuthStatus,
-      logout
-  };
+
   return (
-    <AuthContext.Provider value={value}>
+    <AuthContext.Provider
+      value={{
+        user,
+        setUser,
+        checkingAuth,
+        authError,
+        refetchAuth: fetchAuthStatus,
+        logout
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );
 };
+
 export const useAuth = () => {
   const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error("useAuth must be used within an AuthProvider");
+  if (context === undefined) {
+    throw new Error("❌ useAuth must be used within an XXX");
   }
   return context;
 };

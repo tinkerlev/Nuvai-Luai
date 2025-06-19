@@ -13,7 +13,7 @@ from sqlalchemy.orm import declarative_base
 from werkzeug.security import generate_password_hash, check_password_hash
 from src.nuvai.core.db import Base, db_session
 from src.nuvai.utils.logger import get_logger
-
+from typing import Optional
 
 logger = get_logger("UserModel")
 
@@ -127,8 +127,11 @@ class User(Base):
         return os.path.isfile(absolute_logo_path) and absolute_logo_path.lower().endswith(('.png', '.jpg', '.jpeg', '.gif'))
 
     def get_logo_url(self) -> str:
-        if self.logo_path and self.has_valid_logo():
-            return f"/static/{self.logo_path.strip('/')}"
+        if self.logo_path:
+            if self.logo_path.startswith("static/") or self.logo_path.startswith("/static/"):
+                return f"/{self.logo_path.strip('/')}"
+            if self.logo_path.startswith("http"):
+                return self.logo_path
         return "/static/default_logo.png"
 
     def get_full_name(self) -> str:
@@ -144,20 +147,25 @@ class User(Base):
         return initials_str.upper()
 
     @classmethod
-    def create_oauth_user(cls, email: str, name: str, provider: str):
+    def create_oauth_user(cls, email: str, name: str, provider: str, logo_url: Optional[str] = None):
         logger.info(f"Creating new OAuth user. Email: {email}, Provider: {provider}")
         name_parts = (name or "").split(" ", 1)
         first_name = name_parts[0]
         last_name = name_parts[1] if len(name_parts) > 1 else ""
         new_user = cls(
-            email=email, first_name=first_name, last_name=last_name,
-            oauth_provider=provider, logo_path=None, is_verified=True, role=UserRole.USER, plan="free"
+            email=email,
+            first_name=first_name,
+            last_name=last_name,
+            oauth_provider=provider,
+            logo_path=logo_url if logo_url else None,
+            is_verified=True,
+            role=UserRole.USER,
+            plan="free"
         )
         try:
             with db_session() as session:
                 session.add(new_user)
                 session.commit()
-                
                 logger.info(f"OAuth User {new_user.email} created and saved.")
                 session.refresh(new_user)
                 return new_user

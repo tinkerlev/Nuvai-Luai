@@ -11,47 +11,59 @@ export default function PrivateRoute({ children }) {
       return;
     }
 
-    try {
-      const [headerB64, payloadB64, signature] = token.split(".");
-      if (!headerB64 || !payloadB64 || !signature) {
+    const validateToken = async () => {
+      try {
+        const [headerB64, payloadB64, signature] = token.split(".");
+        if (!headerB64 || !payloadB64 || !signature) {
+          setIsValid(false);
+          return;
+        }
+
+        const header = JSON.parse(atob(headerB64));
+        const payload = JSON.parse(atob(payloadB64));
+
+        if (header.typ !== "JWT" || header.alg !== "HS256") {
+          setIsValid(false);
+          return;
+        }
+
+        const now = Math.floor(Date.now() / 1000);
+        if (
+          !payload.exp || now > payload.exp ||
+          !payload.iat || payload.iat > now ||
+          !payload.sub || typeof payload.sub !== "string" ||
+          !payload.aud || payload.aud !== "nuvai-client" ||
+          !payload.iss || payload.iss !== "nuvai-auth"
+        ) {
+          setIsValid(false);
+          return;
+        }
+
+        const storedSession = localStorage.getItem("sessionID");
+        if (payload.sid && storedSession && payload.sid !== storedSession) {
+          setIsValid(false);
+          return;
+        }
+
+        const res = await fetch(`${process.env.REACT_APP_API_URL}/auth/userinfo`, {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
+
+        if (!res.ok) {
+          setIsValid(false);
+          return;
+        }
+
+        setIsValid(true);
+      } catch (err) {
+        console.error("Token validation error:", err);
         setIsValid(false);
-        return;
       }
+    };
 
-      const header = JSON.parse(atob(headerB64));
-      const payload = JSON.parse(atob(payloadB64));
-
-      if (header.typ !== "JWT" || header.alg !== "HS256") {
-        setIsValid(false);
-        return;
-      }
-
-      const now = Math.floor(Date.now() / 1000);
-
-      if (
-        !payload.exp || now > payload.exp ||                      // Expired token
-        !payload.iat || payload.iat > now ||                      // Invalid issue time
-        !payload.sub || typeof payload.sub !== "string" ||        // Missing or invalid user ID
-        !payload.aud || payload.aud !== "nuvai-client" ||         // Invalid audience
-        !payload.iss || payload.iss !== "nuvai-auth"
-      ) {
-        setIsValid(false);
-        return;
-      }
-
-      const storedSession = localStorage.getItem("sessionID");
-      if (payload.sid && storedSession && payload.sid !== storedSession) {
-        setIsValid(false);
-        return;
-      }
-
-      // Optionally: implement jti (JWT ID) replay protection here
-
-      setIsValid(true);
-    } catch (err) {
-      console.error("Token validation error:", err);
-      setIsValid(false);
-    }
+    validateToken();
   }, []);
 
   if (isValid === null) {

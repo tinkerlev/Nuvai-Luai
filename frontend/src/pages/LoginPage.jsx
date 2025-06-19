@@ -176,10 +176,13 @@ export default function LoginPage() {
         localStorage.removeItem("failCount");
         localStorage.removeItem("lockoutUntil");
         setUser(data.user);
-        navigate("/scan");
+      if (!data.user.plan || data.user.plan === "free") {
+        navigate("/pricing");
       } else {
-        setErrorMsg("Invalid server response. Please try again.");
+        navigate("/scan");
       }
+    }
+
     } catch (err) {
       if (err.name === "AbortError") {
         setErrorMsg("Login request timed out. Please try again.");

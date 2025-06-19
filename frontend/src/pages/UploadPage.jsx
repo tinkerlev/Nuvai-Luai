@@ -1,10 +1,10 @@
 // UploadPage.jsx
 import React, { useState } from "react";
-import UploadForm from "../components/UploadForm";
 import { motion } from "framer-motion";
 import { Icon } from '@iconify/react';
 import { useAuth } from "../constants/AuthContext";
-
+import { Suspense } from "react";
+const UploadForm = React.lazy(() => import("../components/UploadForm"));
 export default function App() {
   const { user } = useAuth();
   const [results, setResults] = useState([]);
@@ -53,16 +53,16 @@ export default function App() {
           variants={fadeIn}
           className="max-w-3xl mx-auto">
           <div className="card bg-base-100 shadow-xl border border-base-300 mb-8">
-            <div className="card-body flex flex-col items-center">
-              <div className="mb-4">
-                <div className="w-24 h-24 rounded-full overflow-hidden">
-                  {user?.logoUrl && !user.logoUrl.includes("default_logo") ? (
-                    <img
-                      src={`${process.env.REACT_APP_API_URL}${user.logoUrl}`}
-                      alt="User profile"
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
+              <div className="card-body flex flex-col items-center">
+                <div className="mb-4">
+                  <div className="w-24 h-24 rounded-full overflow-hidden">
+                    {user?.logoUrl && !user.logoUrl.includes("default_logo") ? (
+                      <img
+                        src={`${process.env.REACT_APP_API_URL}${user.logoUrl}`}
+                        alt="User profile"
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
                     <div className="w-full h-full bg-neutral-focus text-neutral-content flex items-center justify-center ring ring-primary ring-offset-base-100 ring-offset-2 rounded-full">
                       <span className="text-3xl font-bold">
                         {user?.initials?.substring(0, 2).toUpperCase() || "??"}
@@ -77,9 +77,11 @@ export default function App() {
               <p className="text-base-content/70 mb-6">
                 Upload your code files for instant security analysis and vulnerability detection
               </p>
+            <Suspense fallback={<div className="text-center">Loading...</div>}>
               <UploadForm onScan={handleScanResult} />
-            </div>
+            </Suspense>
           </div>
+        </div>
           {results.length > 0 && (
             <motion.div
               initial="hidden"

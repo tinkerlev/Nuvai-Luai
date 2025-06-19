@@ -8,7 +8,7 @@ import uuid
 from src.nuvai.core.db import Base, engine
 from src.nuvai.models import user
 from src.nuvai.models import early_access
-import logging
+import logging 
 from functools import wraps
 from flask import Flask, request, jsonify, send_from_directory, abort
 from flask_cors import CORS

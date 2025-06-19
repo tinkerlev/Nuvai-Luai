@@ -1,4 +1,4 @@
-// src/pages/PricingPage.jsx
+// PricingPage.jsx
 
 import React from 'react';
 import { useStripe } from '@stripe/react-stripe-js';
@@ -22,7 +22,7 @@ const PricingPage = () => {
     }
 
     try {
-      const response = await fetch(`${process.env.REACT_APP_API_URL}/create-checkout-session`, {
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/auth/create-checkout-session`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
