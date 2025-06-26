@@ -5,7 +5,7 @@ import secrets
 import base64
 import json
 import traceback
-import stripe
+
 from flask import session, Blueprint, request, jsonify, url_for, make_response, redirect, abort
 from authlib.integrations.flask_client import OAuth
 from jwt import InvalidTokenError
@@ -18,12 +18,11 @@ from src.nuvai.models.user import User
 from src.nuvai.utils.token_utils import generate_jwt
 from flask_jwt_extended import jwt_required, get_jwt_identity
 
-
 auth_blueprint = Blueprint("auth", __name__)
 logger = get_logger(__name__)
 oauth = OAuth()
 redis_client = Redis.from_url(os.getenv("REDIS_URL", "redis://localhost:6379/0"))
-stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
+
 
 ALLOWED_PROVIDERS = {
     "google": {
@@ -256,79 +255,3 @@ def delete_profile_picture():
     except Exception as e:
         logger.error(f"Error deleting profile picture for user {user.email}: {str(e)}")
         return jsonify({"error": "An internal error occurred while deleting the picture."}), 500
-
-def resolve_plan_from_price(price_id: str) -> str:
-    if price_id == os.getenv("REACT_APP_STRIPE_PRICE_ID_SOLO_FREE"):
-        return "free"
-    elif price_id == os.getenv("REACT_APP_STRIPE_PRICE_ID_SOLO_MONTHLY"):
-        return "solo"
-    elif price_id == os.getenv("REACT_APP_STRIPE_PRICE_ID_SOLO_YEARLY"):
-        return "solo_yearly"
-    elif price_id == os.getenv("REACT_APP_STRIPE_PRICE_ID_PRO_BUSINESS"):
-        return "pro"
-    return "unknown"
-
-@auth_blueprint.route("/webhooks/stripe", methods=['POST'])
-def stripe_webhook():
-    payload, sig_header = request.data, request.headers.get('Stripe-Signature')
-    endpoint_secret = os.getenv('STRIPE_WEBHOOK_SECRET')
-    try:
-        event = stripe.Webhook.construct_event(payload, sig_header, endpoint_secret)
-    except Exception as e:
-        logger.error(f"Stripe webhook error: {e}")
-        return jsonify(status='error'), 400
-    if event['type'] == 'checkout.session.completed':
-        session = event['data']['object']
-        user_email = session.get('metadata', {}).get('user_email')
-        price_id = session.get('metadata', {}).get('price_id')
-        session_id = session.get("subscription")
-        if user_email and session_id:
-            user = User.get_by_email(user_email)
-            if user:
-                user.subscription_id = session_id
-                user.plan = resolve_plan_from_price(price_id)
-                user.save()
-                logger.info(f"User {user_email} subscription updated with session {session_id}")
-            else:
-                logger.warning(f"User not found for email: {user_email}")
-
-    return jsonify(status='success'), 200
-    
-@auth_blueprint.route("/create-checkout-session", methods=['POST', 'OPTIONS'])
-@jwt_required(optional=True)
-def create_checkout_session():
-    logger.info(f"[create-checkout-session] Method: {request.method}")
-
-    if request.method == "OPTIONS":
-        logger.info("[create-checkout-session] Responding to preflight OPTIONS request")
-        return jsonify({"message": "Preflight OK"}), 200
-    try:
-        data = request.get_json()
-        logger.info(f"[create-checkout-session] Incoming data: {data}")
-        price_id = data.get('priceId')
-        if not price_id:
-            logger.warning("[create-checkout-session] Missing priceId in request")
-            return jsonify(error={"message": "Price ID is required"}), 400
-
-        base_url = os.getenv("DEV_FRONTEND_URL", "http://localhost:3000")
-        if os.getenv("NUVAI_ENV") == "production":
-            base_url = os.getenv("PROD_FRONTEND_URL", "https://luai.io")
-
-        logger.info(f"[create-checkout-session] Creating Stripe session for price_id: {price_id}")
-        
-        session = stripe.checkout.Session.create(
-            payment_method_types=['card'],
-            line_items=[{'price': price_id, 'quantity': 1}],
-            mode='subscription',
-            success_url=f"{base_url}/checkout_success",
-            cancel_url=f"{base_url}/pricing",
-            metadata={
-                'user_email': get_jwt_identity() or 'guest', 'price_id': price_id,
-                'session_id': secrets.token_urlsafe(16)
-            }
-        )
-        logger.info(f"[create-checkout-session] Stripe session created: {session.id}")
-        return jsonify({'id': session.id})
-    except Exception as e:
-        logger.error(f"[create-checkout-session] Exception occurred: {e}")
-        return jsonify(error={"message": str(e)}), 500

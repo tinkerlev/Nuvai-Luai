@@ -1,57 +1,31 @@
 // PricingPage.jsx
 
 import React from 'react';
-import { useStripe } from '@stripe/react-stripe-js';
 import { useAuth } from '../constants/AuthContext';
 import { useNavigate } from 'react-router-dom';
 
 const PricingPage = () => {
-  const stripe = useStripe();
   const { user } = useAuth();
   const navigate = useNavigate();
 
-  const soloFreePriceId = process.env.REACT_APP_STRIPE_PRICE_ID_SOLO_FREE;
-  const soloMonthlyPriceId = process.env.REACT_APP_STRIPE_PRICE_ID_SOLO_MONTHLY;
-  const soloYearlyPriceId = process.env.REACT_APP_STRIPE_PRICE_ID_SOLO_YEARLY;
-  const proBusinessPriceId = process.env.REACT_APP_STRIPE_PRICE_ID_PRO_BUSINESS;
+  const soloMonthlyURL = process.env.REACT_APP_SOLO_MONTHLY_URL;
+  const soloYearlyURL = process.env.REACT_APP_SOLO_YEARLY_URL;
+  const proBusinessURL = process.env.REACT_APP_PRO_BUSINESS_URL;
+  const freePlanURL = process.env.REACT_APP_FREE_PLAN_URL;
 
-  const handleSubscription = async (priceId) => {
+  const handleSubscription = (url) => {
     if (!user) {
       navigate('/login');
       return;
     }
-
-    try {
-      const response = await fetch(`${process.env.REACT_APP_API_URL}/auth/create-checkout-session`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ priceId: priceId })
-      });
-
-      const session = await response.json();
-      if (response.status !== 200) {
-        throw new Error(session.error || "Failed to create session.");
-      }
-
-      const { error } = await stripe.redirectToCheckout({
-        sessionId: session.id,
-      });
-
-      if (error) {
-        console.error("Stripe checkout error:", error.message);
-      }
-    } catch (error) {
-      console.error("Subscription failed:", error.message);
-    }
+    window.location.href = url;
   };
 
   return (
     <div className="max-w-7xl mx-auto p-8">
       <h1 className="text-4xl font-bold text-center mb-12">Choose Your Plan</h1>
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-8 items-start">
-        {/* Basic Plan */}
+
         <div className="border rounded-lg p-6 w-full max-w-sm mx-auto text-center">
           <h2 className="text-2xl font-semibold">Basic Plan for Free</h2>
           <p className="text-4xl font-bold my-4">$0.00<span className="text-xl">/mo</span></p>
@@ -64,9 +38,8 @@ const PricingPage = () => {
             <li>✔ No credit card required</li>
           </ul>
           <button 
-            onClick={() => handleSubscription(soloFreePriceId)} 
+            onClick={() => handleSubscription(freePlanURL)} 
             className="btn btn-primary w-full"
-            disabled={!stripe}
           >
             Choose Plan
           </button>
@@ -84,9 +57,8 @@ const PricingPage = () => {
             <li>✔ Designed for freelance developers & pentesters</li>
           </ul>
           <button 
-            onClick={() => handleSubscription(soloMonthlyPriceId)} 
+            onClick={() => handleSubscription(soloMonthlyURL)} 
             className="btn btn-primary w-full"
-            disabled={!stripe}
           >
             Choose Plan
           </button>
@@ -106,9 +78,8 @@ const PricingPage = () => {
             <li>✔ No renewal surprises or hidden fees</li>
           </ul>
           <button 
-            onClick={() => handleSubscription(soloYearlyPriceId)}
+            onClick={() => handleSubscription(soloYearlyURL)}
             className="btn btn-primary w-full"
-            disabled={!stripe}
           >
             Choose Plan
           </button>
@@ -129,9 +100,8 @@ const PricingPage = () => {
             <li>✔ Integrations: GitHub, GitLab, Bitbucket (coming soon)</li>
           </ul>
           <button 
-            onClick={() => handleSubscription(proBusinessPriceId)}
+            onClick={() => handleSubscription(proBusinessURL)}
             className="btn btn-primary w-full"
-            disabled={!stripe}
           >
             Choose Plan
           </button>

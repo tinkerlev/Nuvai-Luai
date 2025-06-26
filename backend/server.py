@@ -23,6 +23,7 @@ from src.nuvai.utils.get_language import get_language
 from src.nuvai.utils.logger import get_logger
 from src.nuvai.core.db import init_db
 from src.nuvai.models.user import User
+from src.nuvai.routes.lemon_webhook import lemon_webhook
 
 logger = get_logger(__name__)
 
@@ -98,6 +99,7 @@ def create_app():
     app.register_blueprint(auth_blueprint, url_prefix="/auth")
     app.register_blueprint(reset_blueprint, url_prefix="/auth")
     app.register_blueprint(early_access_blueprint)
+    app.register_blueprint(lemon_webhook)
 
     @app.route("/favicon.ico")
     def favicon():
