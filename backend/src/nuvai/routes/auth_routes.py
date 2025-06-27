@@ -47,15 +47,23 @@ for name, config in ALLOWED_PROVIDERS.items():
 
 @auth_blueprint.route("/login/<provider>")
 def login_provider(provider):
+    logger.info("ENTERING login_provider")
     provider = provider.lower().strip()
-    if provider not in ALLOWED_PROVIDERS: abort(400, "Unsupported provider")
+    logger.debug(f"Attempting to login with provider: {provider_name}")
+    if provider not in ALLOWED_PROVIDERS:
+        looger.waring(f"Unsupported provider requested: {provider_name}")
+        abort(400, "Unsupported provider")
     redirect_uri = url_for("auth.callback_provider", provider=provider, _external=True, _scheme='https' if os.getenv("NUVAI_ENV") == "production" else 'http')
+    logger.info(f"Successfully generated redirect URI: {redirect_uri}")
     session['redirect_after_oauth'] = request.args.get('returnTo', '/scan')
+    logger.debug(f"Path to return to after auth: {session['redirect_after_oauth']}")
     client = oauth.create_client(provider)
+    logger.info(f"Finalizing setup. About to redirect user to {provider_name}'s auth page...")
     if provider == 'google':
         nonce = secrets.token_urlsafe(16)
         session['oauth_nonce'] = nonce
         return client.authorize_redirect(redirect_uri, nonce=nonce)
+    logger.info("Attempting to generate the redirect URL")
     return client.authorize_redirect(redirect_uri)
 
 @auth_blueprint.route("/callback/<provider>")
@@ -109,6 +117,7 @@ def callback_provider(provider):
         return resp
     except Exception as e:
         logger.error(f"CRITICAL OAuth callback failed: {e}\n{traceback.format_exc()}")
+        logger.exception(e)
         return redirect(f"{base_frontend_url}/login?error=oauth_failed")
 
 @auth_blueprint.route("/logout", methods=["POST"])
