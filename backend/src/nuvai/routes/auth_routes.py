@@ -8,12 +8,11 @@ import traceback
 from uuid import uuid4
 from datetime import timedelta
 from src.nuvai.utils.token_utils import store_jti_in_redis
-from flask import session, Blueprint, request, jsonify, url_for, make_response, redirect, abort
+from flask import session, Blueprint, request, jsonify, url_for, make_response, redirect, abort, current_app
 from authlib.integrations.flask_client import OAuth
 from jwt import InvalidTokenError
 from redis import Redis
 from werkzeug.utils import secure_filename
-
 from src.nuvai.utils.logger import get_logger
 from src.nuvai.utils.sanitize import sanitize_email, sanitize_text, sanitize_name
 from src.nuvai.models.user import User
@@ -23,33 +22,32 @@ from flask_jwt_extended import jwt_required, get_jwt_identity, get_jwt
 auth_blueprint = Blueprint("auth", __name__)
 logger = get_logger(__name__)
 oauth = OAuth()
-redis_client = Redis.from_url(os.getenv("REDIS_URL", "redis://localhost:6379/0"))
+# redis_client = Redis.from_url(os.getenv("REDIS_URL", "redis://localhost:6379/0"))
 
-
-ALLOWED_PROVIDERS = {
-    "google": {
-        "client_id": os.getenv("GOOGLE_CLIENT_ID"),
-        "client_secret": os.getenv("GOOGLE_CLIENT_SECRET"),
-        "server_metadata_url": "https://accounts.google.com/.well-known/openid-configuration",
-        "client_kwargs": {"scope": "openid profile email"}
-    },
-    "github": {
-        "client_id": os.getenv("GITHUB_CLIENT_ID"),
-        "client_secret": os.getenv("GITHUB_CLIENT_SECRET"),
-        "api_base_url": "https://api.github.com/",
-        "access_token_url": "https://github.com/login/oauth/access_token",
-        "authorize_url": "https://github.com/login/oauth/authorize",
-        "client_kwargs": {"scope": "read:user user:email"}
-    },
-}
-for name, config in ALLOWED_PROVIDERS.items():
-    oauth.register(name=name, **config)
+# ALLOWED_PROVIDERS = {
+#     "google": {
+#         "client_id": os.getenv("GOOGLE_CLIENT_ID"),
+#         "client_secret": os.getenv("GOOGLE_CLIENT_SECRET"),
+#         "server_metadata_url": "https://accounts.google.com/.well-known/openid-configuration",
+#         "client_kwargs": {"scope": "openid profile email"}
+#     },
+#     "github": {
+#         "client_id": os.getenv("GITHUB_CLIENT_ID"),
+#         "client_secret": os.getenv("GITHUB_CLIENT_SECRET"),
+#         "api_base_url": "https://api.github.com/",
+#         "access_token_url": "https://github.com/login/oauth/access_token",
+#         "authorize_url": "https://github.com/login/oauth/authorize",
+#         "client_kwargs": {"scope": "read:user user:email"}
+#     },
+# }
+# for name, config in ALLOWED_PROVIDERS.items():
+#     oauth.register(name=name, **config)
 
 @auth_blueprint.route("/callback/<provider>")
 def callback_provider(provider):
     logger.info(f"--- ENTERING OAuth Callback for provider: {provider} ---")    
-    provider_name = provider.lower().strip()
-    if provider_name not in ALLOWED_PROVIDERS:
+    provider_name = provider.lower()
+    if provider_name not in current_app.config['ALLOWED_PROVIDERS']:
         logger.warning(f"Callback received for unsupported provider: {provider_name}")
         abort(400, "Unsupported provider")
 
@@ -163,10 +161,9 @@ def login():
 def get_user_info():
     current_user_email = get_jwt_identity()
     jti = get_jwt()["jti"]
+    redis_client = current_app.config['REDIS_CLIENT']
     print(f"[DEBUG] JWT Identity: {current_user_email}")
     print(f"[DEBUG] JTI: {jti}")
-    print(f"[DEBUG] Redis revoked? {redis_client.get(f'revoked:{jti}')}")
-    print(f"[DEBUG] Redis active? {redis_client.get(f'active:{jti}')}")
     if redis_client.get(f"revoked:{jti}"):
         response = jsonify({"msg": "Token invalidated"})
         response.delete_cookie("luai.jwt")
@@ -212,7 +209,6 @@ def update_profile_picture():
     if 'profile_picture' not in request.files: return jsonify(msg="No profile_picture file part"), 400
     file = request.files['profile_picture']
     if file.filename == '': return jsonify(msg="No selected file"), 400
-    
     allowed_extensions = {'png', 'jpg', 'jpeg', 'gif'}
     if '.' not in file.filename or file.filename.rsplit('.', 1)[1].lower() not in allowed_extensions:
         return jsonify(msg="Invalid file type"), 400
@@ -220,7 +216,6 @@ def update_profile_picture():
     try:
         if user.logo_path and os.path.exists(os.path.join("static", user.logo_path)):
              os.remove(os.path.join("static", user.logo_path))
-
         filename = f"user_{user.id}_{secrets.token_hex(8)}.{secure_filename(file.filename.rsplit('.', 1)[1].lower())}"
         logos_dir = os.path.join("static", "user_logos")
         os.makedirs(logos_dir, exist_ok=True)
@@ -259,16 +254,13 @@ def delete_profile_picture():
             logger.info(f"Deleted physical logo file for user {user.email}: {file_to_delete}")
         else:
             logger.warning(f"Logo file not found for user {user.email}, but DB entry existed: {file_to_delete}")
-
         user.logo_path = None
         user.save()
-        
         logger.info(f"Profile picture database path cleared for user {user.email}")
         
         return jsonify({"message": "Profile picture deleted successfully"}), 200
 
     except Exception as e:
         logger.error(f"Error deleting profile picture for user {user.email}: {str(e)}")
-        logger.error("!!! CRITICAL FAILURE in login_provider !!!")
         logger.exception(e)
         return jsonify({"error": "An internal error occurred while deleting the picture."}), 500

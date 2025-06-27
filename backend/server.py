@@ -78,7 +78,6 @@ def method_check(allowed_methods):
 
 def create_app():
     app = Flask(__name__)
-    oauth.init_app(app)
     app.secret_key = os.getenv("FLASK_SECRET_KEY", "super-secret-dev-key")
     app.config["MAX_CONTENT_LENGTH"] = MAX_FILE_SIZE
     app.config["JWT_SECRET_KEY"] = os.getenv("NUVAI_SECRET")
@@ -89,13 +88,34 @@ def create_app():
     app.config["JWT_COOKIE_CSRF_PROTECT"] = False
     app.config["JWT_DECODE_AUDIENCE"] = "luai-client"
     app.config["JWT_ENCODE_ISSUER"] = "luai-auth"
+    app.config['REDIS_CLIENT'] = Redis.from_url(os.getenv("REDIS_URL", "redis://localhost:6379/0"))
     logger.debug(f"ALLOWED_ORIGINS = {ALLOWED_ORIGINS}")
+    oauth.init_app(app)
     CORS(app,
          origins=ALLOWED_ORIGINS,
          supports_credentials=True,
          allow_headers=["Content-Type", "Authorization", "X-Requested-With", "X-CSRF-Token", "x-client-nonce"],
          methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"])
-
+    JWTManager(app)
+    ALLOWED_PROVIDERS = {
+        "google": {
+            "client_id": os.getenv("GOOGLE_CLIENT_ID"),
+            "client_secret": os.getenv("GOOGLE_CLIENT_SECRET"),
+            "server_metadata_url": "https://accounts.google.com/.well-known/openid-configuration",
+            "client_kwargs": {"scope": "openid profile email"}
+        },
+        "github": {
+            "client_id": os.getenv("GITHUB_CLIENT_ID"),
+            "client_secret": os.getenv("GITHUB_CLIENT_SECRET"),
+            "api_base_url": "https://api.github.com/",
+            "access_token_url": "https://github.com/login/oauth/access_token",
+            "authorize_url": "https://github.com/login/oauth/authorize",
+            "client_kwargs": {"scope": "read:user user:email"}
+        },
+    }  
+    app.config['ALLOWED_PROVIDERS'] = ALLOWED_PROVIDERS
+    for name, config in ALLOWED_PROVIDERS.items():
+        oauth.register(name=name, **config)
     app.register_blueprint(auth_blueprint, url_prefix="/auth")
     app.register_blueprint(reset_blueprint, url_prefix="/auth")
     app.register_blueprint(early_access_blueprint)
@@ -109,7 +129,6 @@ def create_app():
             mimetype="image/vnd.microsoft.icon"
         )
 
-    jwt = JWTManager(app)
     @app.route("/")
     def health_check():
         return jsonify({
@@ -214,8 +233,9 @@ def create_app():
     return app
 
 
-
 if __name__ == "__main__":
     init_db()
     app = create_app()
     app.run(host="0.0.0.0", port=API_PORT)
+
+app = create_app()
