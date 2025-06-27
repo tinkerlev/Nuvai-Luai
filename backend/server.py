@@ -15,6 +15,7 @@ from flask_cors import CORS
 from werkzeug.utils import secure_filename
 from flask_jwt_extended import JWTManager, jwt_required, get_jwt_identity
 from src.nuvai.routes.auth_routes import auth_blueprint, oauth
+from redis import Redis
 from src.nuvai.routes.reset_password_secure import reset_blueprint
 from src.nuvai.routes.early_access_routes import early_access_blueprint
 from config import get_config, validate_config
