@@ -45,79 +45,66 @@ ALLOWED_PROVIDERS = {
 for name, config in ALLOWED_PROVIDERS.items():
     oauth.register(name=name, **config)
 
-@auth_blueprint.route("/login/<provider>")
-def login_provider(provider):
-    logger.info("ENTERING login_provider")
-    provider = provider.lower().strip()
-    logger.debug(f"Attempting to login with provider: {provider_name}")
-    if provider not in ALLOWED_PROVIDERS:
-        looger.waring(f"Unsupported provider requested: {provider_name}")
-        abort(400, "Unsupported provider")
-    redirect_uri = url_for("auth.callback_provider", provider=provider, _external=True, _scheme='https' if os.getenv("NUVAI_ENV") == "production" else 'http')
-    logger.info(f"Successfully generated redirect URI: {redirect_uri}")
-    session['redirect_after_oauth'] = request.args.get('returnTo', '/scan')
-    logger.debug(f"Path to return to after auth: {session['redirect_after_oauth']}")
-    client = oauth.create_client(provider)
-    logger.info(f"Finalizing setup. About to redirect user to {provider_name}'s auth page...")
-    if provider == 'google':
-        nonce = secrets.token_urlsafe(16)
-        session['oauth_nonce'] = nonce
-        return client.authorize_redirect(redirect_uri, nonce=nonce)
-    logger.info("Attempting to generate the redirect URL")
-    return client.authorize_redirect(redirect_uri)
-
 @auth_blueprint.route("/callback/<provider>")
 def callback_provider(provider):
-    provider = provider.lower().strip()
-    if provider not in ALLOWED_PROVIDERS: abort(400, "Unsupported provider")
+    logger.info(f"--- ENTERING OAuth Callback for provider: {provider} ---")    
+    provider_name = provider.lower().strip()
+    if provider_name not in ALLOWED_PROVIDERS:
+        logger.warning(f"Callback received for unsupported provider: {provider_name}")
+        abort(400, "Unsupported provider")
+
     base_frontend_url = os.getenv("DEV_FRONTEND_URL", "http://localhost:3000")
     if os.getenv("NUVAI_ENV") == "production":
         base_frontend_url = os.getenv("PROD_FRONTEND_URL", "https://luai.io")
     return_to_path = session.pop('redirect_after_oauth', '/scan')
+    
     try:
-        client = oauth.create_client(provider)
-        nonce = session.pop('oauth_nonce', None) if provider == 'google' else None
-        token = client.authorize_access_token(nonce=nonce)
+        client = oauth.create_client(provider_name)
+        nonce = session.pop('oauth_nonce', None) if provider_name == 'google' else None
+        logger.info("Attempting to exchange authorization code for an access token...")        
+        token = client.authorize_access_token(nonce=nonce)        
+        logger.info("Successfully received access token. Now fetching user profile...")
+
         email, name, logo_url = None, None, None
-        if provider == 'github':
+        if provider_name == 'github':
             user_profile = client.get('user', token=token).json()
-            name = user_profile.get('name') or user_profile.get('login')
-            email = user_profile.get('email')
-            logo_url = user_profile.get("avatar_url")
-            if not email:
-                user_emails_info = client.get('user/emails', token=token).json()
-                for e_info in user_emails_info:
-                    if e_info.get('primary') and e_info.get('verified'):
-                        email = e_info.get('email'); break
         else:
             user_info = client.parse_id_token(token, nonce=nonce)
             email, name, logo_url = user_info.get("email"), user_info.get("name"), user_info.get("picture")
+
+        logger.info(f"User profile obtained. Email: {email}, Name: {name}")
+
         if not email:
+            logger.warning("No email found in user profile. Redirecting to login with error.")
             return redirect(f"{base_frontend_url}/login?error=no_email")
+            
         sanitized_email, sanitized_name = sanitize_email(email), sanitize_name(name or "")
+        logger.info("Connecting to the database (Neon) to check if user exists...")
+        
         user = User.get_by_email(sanitized_email)
+        
         if not user:
-            user = User.create_oauth_user(
-                email=sanitized_email,
-                name=sanitized_name,
-                provider=provider,
-                logo_url=logo_url
-            )
+            logger.info(f"User '{sanitized_email}' not found. Creating a new user...")
+            user = User.create_oauth_user(email=sanitized_email, name=sanitized_name, provider=provider_name, logo_url=logo_url)
         else:
+            logger.info(f"Found existing user: '{sanitized_email}'.")
             if not user.logo_path or user.logo_path.startswith("http"):
                 user.logo_path = logo_url
                 user.save()
-        jti = str(uuid4())
+        logger.info("User processed. Now generating JWT and storing session in Redis...")      
         jwt_token, jti = generate_jwt(user.id, user.email)
         store_jti_in_redis(jti)
+        logger.info("Session stored successfully. Preparing final redirect...")
         if not return_to_path.startswith('/'): return_to_path = '/scan'
         final_redirect_url = f"{base_frontend_url.rstrip('/')}{return_to_path}"
         resp = make_response(redirect(final_redirect_url))
         resp.set_cookie("luai.jwt", jwt_token, httponly=True, secure=(os.getenv("NUVAI_ENV")=="production"), samesite="Lax", path="/")
+        logger.info(f"--- OAuth Callback for {provider_name} COMPLETED ---")
         return resp
+
     except Exception as e:
-        logger.error(f"CRITICAL OAuth callback failed: {e}\n{traceback.format_exc()}")
-        logger.exception(e)
+        logger.error(f"!!! CRITICAL OAuth callback failed for provider {provider_name} !!!")
+        logger.error(f"Error Details: {e}\nFull Traceback:\n{traceback.format_exc()}")
         return redirect(f"{base_frontend_url}/login?error=oauth_failed")
 
 @auth_blueprint.route("/logout", methods=["POST"])
@@ -282,4 +269,6 @@ def delete_profile_picture():
 
     except Exception as e:
         logger.error(f"Error deleting profile picture for user {user.email}: {str(e)}")
+        logger.error("!!! CRITICAL FAILURE in login_provider !!!")
+        logger.exception(e)
         return jsonify({"error": "An internal error occurred while deleting the picture."}), 500
