@@ -1,6 +1,6 @@
 // AppRouter.jsx
 
-import React, { Suspense } from "react";
+import React from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "./constants/AuthContext";
 import Footer from "./components/Footer";
@@ -24,19 +24,19 @@ const CheckoutSuccess = React.lazy(() => import("./pages/CheckoutSuccess"));
 
 const stripePromise = loadStripe(process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY);
 
-function LoadingScreen() {
-  return (
-    <div className="min-h-screen flex items-center justify-center">
-      <div className="animate-pulse text-sm text-gray-500">
-        🔄 Validating session...
-      </div>
-    </div>
-  );
-}
+// function LoadingScreen() {
+//   return (
+//     <div className="min-h-screen flex items-center justify-center">
+//       <div className="animate-pulse text-sm text-gray-500">
+//         🔄 Validating session...
+//       </div>
+//     </div>
+//   );
+// }
 
 function AppContent() {
-  const { user, checkingAuth } = useAuth();
-  if (checkingAuth) return <LoadingScreen />;
+  const { user } = useAuth();
+  // if (checkingAuth) return <LoadingScreen />;
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -45,7 +45,7 @@ function AppContent() {
       </div>
 
       <div className="flex-grow">
-        <Suspense fallback={<LoadingScreen />}>
+        {/* <Suspense fallback={<LoadingScreen />}> */}
           <Routes>
             <Route path="/home" element={<HomePage />} />
             <Route path="/early-access" element={<GetEarlyAccess />} />
@@ -61,7 +61,7 @@ function AppContent() {
             <Route path="/checkout-success" element={<CheckoutSuccess />} />
 
           </Routes>
-        </Suspense>
+        {/* </Suspense> */}
       </div>
       <Footer />
     </div>

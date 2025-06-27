@@ -36,7 +36,6 @@ export const AuthProvider = ({ children }) => {
   //   fetchAuthStatus();
   // }, []);
   
-
   const logout = async () => {
     try {
       await fetch(`${process.env.REACT_APP_API_URL}/auth/logout`, {
