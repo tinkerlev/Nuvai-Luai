@@ -105,6 +105,24 @@ def callback_provider(provider):
         logger.error(f"Error Details: {e}\nFull Traceback:\n{traceback.format_exc()}")
         return redirect(f"{base_frontend_url}/login?error=oauth_failed")
 
+@auth_blueprint.route("/login/<provider>")
+def login_provider(provider):
+    """
+    Redirects the user to the provider's authorization page.
+    """
+    logger.info(f"--- Initiating OAuth login for provider: {provider} ---")    
+    provider_name = provider.lower().strip()
+    if provider_name not in current_app.config['ALLOWED_PROVIDERS']:
+        logger.warning(f"Attempt to login with unsupported provider: {provider_name}")
+        abort(404, f"Provider '{provider_name}' is not supported.")
+    scheme = 'https' if os.getenv("NUVAI_ENV") == "production" else 'http'
+    redirect_uri = url_for("auth.callback_provider", provider=provider_name, _external=True, _scheme=scheme)
+    logger.debug(f"Generated redirect URI: {redirect_uri}")
+    session['redirect_after_oauth'] = request.args.get('returnTo', '/scan')    
+    client = oauth.create_client(provider_name)
+    logger.info(f"Redirecting user to {provider_name}...")
+    return client.authorize_redirect(redirect_uri)
+    
 @auth_blueprint.route("/logout", methods=["POST"])
 def logout():
     response = jsonify({"message": "Logged out successfully"})
