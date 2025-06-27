@@ -7,8 +7,7 @@ import Footer from "./components/Footer";
 import UserMenu from './components/UserMenu';
 import { SpeedInsights } from "@vercel/speed-insights/react";
 import { Analytics } from "@vercel/analytics/react";
-import { loadStripe } from '@stripe/stripe-js';
-import { Elements } from '@stripe/react-stripe-js';
+
 
 const LoginPage = React.lazy(() => import("./pages/LoginPage"));
 const RegisterPage = React.lazy(() => import("./pages/RegisterPage"));
@@ -21,7 +20,7 @@ const HomePage = React.lazy(() => import("./pages/Home"));
 const GetEarlyAccess = React.lazy(() => import("./pages/GetEarlyAccess"));
 const PricingPage = React.lazy(() => import("./pages/PricingPage"));
 const CheckoutSuccess = React.lazy(() => import("./pages/CheckoutSuccess"));
-const stripePromise = loadStripe(process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY);
+
 
 // function LoadingScreen() {
 //   return (
@@ -71,11 +70,9 @@ export default function AppRouter() {
   return (
     <Router>
       <AuthProvider>
-        <Elements stripe={stripePromise}>
           <AppContent />
           <SpeedInsights />
           <Analytics />
-        </Elements>
       </AuthProvider>
     </Router>
   );
