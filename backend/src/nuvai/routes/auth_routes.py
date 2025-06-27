@@ -30,66 +30,71 @@ def callback_provider(provider):
     if provider_name not in current_app.config['ALLOWED_PROVIDERS']:
         logger.warning(f"Callback received for unsupported provider: {provider_name}")
         abort(400, "Unsupported provider")
-
     base_frontend_url = os.getenv("DEV_FRONTEND_URL", "http://localhost:3000")
     if os.getenv("NUVAI_ENV") == "production":
         base_frontend_url = os.getenv("PROD_FRONTEND_URL", "https://luai.io")
     return_to_path = session.pop('redirect_after_oauth', '/scan')
-    
     try:
         client = oauth.create_client(provider_name)
-        nonce = session.pop('oauth_nonce', None) if provider_name == 'google' else None
-        logger.info("Attempting to exchange authorization code for an access token...")        
-        token = client.authorize_access_token(nonce=nonce)        
-        logger.info("Successfully received access token. Now fetching user profile...")
+        nonce = session.pop('oauth_nonce', None) if provider_name == 'google' else None       
+        token = client.authorize_access_token(nonce=nonce)
+        user_data = None
+        if provider_name == 'google':
+            user_data = token.get('userinfo')
+            if not user_data:
+                user_data = client.parse_id_token(token)
 
-        email, name, logo_url = None, None, None
-        if provider_name == 'github':
-            user_profile = client.get('user', token=token).json()
-        else:
-            user_info = client.parse_id_token(token, nonce=nonce)
-            email, name, logo_url = user_info.get("email"), user_info.get("name"), user_info.get("picture")
+        elif provider_name == 'github':
+            resp = client.get('user')
+            resp.raise_for_status()
+            user_data = resp.json()
 
-        logger.info(f"User profile obtained. Email: {email}, Name: {name}")
-
+        if not user_data:
+            return redirect(f"{base_frontend_url}/login?error=user_info_failed")
+        email = user_data.get('email')
+        name = user_data.get('name')
+        logo_url = user_data.get('picture') or user_data.get('avatar_url')
         if not email:
-            logger.warning("No email found in user profile. Redirecting to login with error.")
             return redirect(f"{base_frontend_url}/login?error=no_email")
-            
+
         sanitized_email, sanitized_name = sanitize_email(email), sanitize_name(name or "")
-        logger.info("Connecting to the database (Neon) to check if user exists...")
-        
         user = User.get_by_email(sanitized_email)
-        
         if not user:
-            logger.info(f"User '{sanitized_email}' not found. Creating a new user...")
-            user = User.create_oauth_user(email=sanitized_email, name=sanitized_name, provider=provider_name, logo_url=logo_url)
+            logger.info(f"User '{sanitized_email}' not found. Creating a new user.")
+            user = User.create_oauth_user(
+                email=sanitized_email,
+                name=sanitized_name,
+                provider=provider_name,
+                logo_url=logo_url
+            )
+        if not user:
+            return redirect(f"{base_frontend_url}/login?error=user_not_found")
         else:
-            logger.info(f"Found existing user: '{sanitized_email}'.")
-            if not user.logo_path or user.logo_path.startswith("http"):
-                user.logo_path = logo_url
+            if not user.oauth_provider or user.oauth_provider.lower() != provider_name:
+                user.oauth_provider = provider_name
+                user.oauth_id = user_data.get('id') or str(uuid4())
+                user.first_name = sanitized_name.split()[0] if sanitized_name else ""
+                user.last_name = " ".join(sanitized_name.split()[1:]) if len(sanitized_name.split()) > 1 else ""
+                user.logo_path = logo_url if logo_url else None
                 user.save()
-        logger.info("User processed. Now generating JWT and storing session in Redis...")      
         jwt_token, jti = generate_jwt(user.id, user.email)
         store_jti_in_redis(jti)
-        logger.info("Session stored successfully. Preparing final redirect...")
+       
         user_has_subscription = False
         if hasattr(user, 'has_active_subscription'):
             user_has_subscription = user.has_active_subscription()
         else:
-            logger.warning("Method 'has_active_subscription' not found on User model. Using direct plan check")
             if user.plan and user.plan.lower() not in ['free', None, '']:
                 user_has_subscription = True
         if user_has_subscription or (user.plan and user.plan.lower() == 'free'):
-            logger.info(f"User '{user.email}' has an active/free plan. Redirecting to /scan")
             final_redirect_url = f"{base_frontend_url.rstrip('/')}/scan"
         else:
             final_redirect_url = f"{base_frontend_url.rstrip('/')}/pricing"
-
-        logger.info(f"Final redirect URL determined: {final_redirect_url}")
         resp = make_response(redirect(final_redirect_url))
-        resp.set_cookie("luai.jwt", jwt_token, httponly=True, secure=(os.getenv("NUVAI_ENV")=="production"), samesite="Lax", path="/")
-        logger.info(f"--- OAuth Callback for {provider_name} COMPLETED ---")
+        cookie_domain = None
+        if os.getenv("NUVAI_ENV") == "production":
+            cookie_domain = ".luai.io"
+        resp.set_cookie("luai.jwt", jwt_token, httponly=True, secure=(os.getenv("NUVAI_ENV")=="production"), samesite="Lax", path="/", domain=cookie_domain)
         return resp
 
     except Exception as e:

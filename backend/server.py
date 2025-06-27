@@ -38,9 +38,7 @@ logging.getLogger("werkzeug").setLevel(log_level)
 logging.getLogger("flask_jwt_extended").setLevel(log_level)
 logging.getLogger("authlib").setLevel(log_level)
 logging.getLogger("luai-server").setLevel(log_level)
-
 logger = logging.getLogger("luai-server")
-
 validate_config()
 config = get_config()
 API_PORT = int(os.getenv("API_PORT", 5000))
@@ -232,7 +230,6 @@ def create_app():
                 os.remove(file_path)
                 logger.debug(f"Temporary file '{file_path}' deleted")
     return app
-
 
 if __name__ == "__main__":
     init_db()

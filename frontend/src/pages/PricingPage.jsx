@@ -1,23 +1,23 @@
 // PricingPage.jsx
-
 import React from 'react';
 import { useAuth } from '../constants/AuthContext';
 import { useNavigate } from 'react-router-dom';
 
 const PricingPage = () => {
-  const { user } = useAuth();
+  const { user, refetchAuth } = useAuth();
   const navigate = useNavigate();
 
   const soloMonthlyURL = process.env.REACT_APP_SOLO_MONTHLY_URL;
   const soloYearlyURL = process.env.REACT_APP_SOLO_YEARLY_URL;
   const proBusinessURL = process.env.REACT_APP_PRO_BUSINESS_URL;
-  const freePlanURL = process.env.REACT_APP_FREE_PLAN_URL;
+  const freePlanURL = process.env.REACT_APP_FREE_PLAN_URL; // נשאר למקרה הצורך
 
   const handleSubscription = (url, isFree = false) => {
     if (!user) {
       navigate('/login');
       return;
     }
+
     if (isFree) {
       fetch(`${process.env.REACT_APP_API_URL}/billing/activate_free_plan`, {
         method: "POST",
@@ -25,19 +25,25 @@ const PricingPage = () => {
       })
       .then(res => {
         if (res.ok) {
-          navigate('/scan');
+          return refetchAuth();
         } else {
-          console.error("Failed to activate free plan");
+          return res.text().then(text => { throw new Error(`Server responded with ${res.status}: ${text}`) });
         }
       })
+      .then(() => {
+        navigate('/scan');
+      })
       .catch(err => {
-        console.error("Free plan error:", err);
+        console.error("Error during free plan activation process:", err);
       });
     } else {
-      window.location.href = url;
+      if (url) {
+        window.location.href = url;
+      } else {
+        console.error("No subscription URL provided for paid plan.");
+      }
     }
   };
-
 
   return (
     <div className="max-w-7xl mx-auto p-8">
@@ -56,7 +62,7 @@ const PricingPage = () => {
             <li>✔ No credit card required</li>
           </ul>
           <button 
-            onClick={() => handleSubscription(freePlanURL, true)} 
+            onClick={() => handleSubscription(null, true)} 
             className="btn btn-primary w-full"
           >
             Choose Plan

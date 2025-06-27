@@ -1,12 +1,12 @@
 // AuthContext.jsx
-import React, { createContext, useState, useContext } from "react";
+import React, { createContext, useState, useContext, useEffect, useCallback } from "react";
 export const AuthContext = createContext(undefined);
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
-  const [checkingAuth, setCheckingAuth] = useState(false);
+  const [checkingAuth, setCheckingAuth] = useState(true);
   const [authError, setAuthError] = useState(null);
 
-  const fetchAuthStatus = async () => {
+const fetchAuthStatus = useCallback(async () => {
     try {
       const res = await fetch(`${process.env.REACT_APP_API_URL}/auth/userinfo`, {
         method: "GET",
@@ -20,27 +20,30 @@ export const AuthProvider = ({ children }) => {
 
       const { user } = await res.json();
       setUser(user || null);
-      console.log("user from server", user);
+
     } catch (err) {
       if (process.env.NODE_ENV === "development") {
         console.error("Auth error:", err.message);
       }
       setUser(null);
       setAuthError("Auth error");
+
     } finally {
       setCheckingAuth(false);
     }
-  };
-
-  // useEffect(() => {
-  //   fetchAuthStatus();
-  // }, []);
+  }, []);
+  useEffect(() => {
+    fetchAuthStatus();
+  }, [fetchAuthStatus]);
   
   const logout = async () => {
     try {
       await fetch(`${process.env.REACT_APP_API_URL}/auth/logout`, {
         method: "POST",
-        credentials: "include"
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json"
+        }
       });
     } catch (e) {
       console.warn("Logout failed silently.");

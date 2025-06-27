@@ -1,13 +1,38 @@
 // UploadPage.jsx
-import React, { useState } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import { motion } from "framer-motion";
 import { Icon } from '@iconify/react';
 import { useAuth } from "../constants/AuthContext";
-import { Suspense } from "react";
+import { useNavigate } from "react-router-dom";
 const UploadForm = React.lazy(() => import("../components/UploadForm"));
 export default function App() {
-  const { user } = useAuth();
+  const { user, refetchAuth, checkingAuth } = useAuth();
+  const navigate = useNavigate();
   const [results, setResults] = useState([]);
+  useEffect(() => {
+    if (!user) {
+      refetchAuth();
+    }
+  }, [user, refetchAuth]);
+
+  useEffect(() => {
+    if (!checkingAuth && !user) {
+      navigate('/login');
+    }
+  }, [checkingAuth, user, navigate]);
+ 
+  if (checkingAuth) {
+    return (
+      <div className="min-h-screen bg-base-200 flex items-center justify-center">
+        <span className="loading loading-dots loading-lg text-primary"></span>
+      </div>
+    );
+  }
+
+  if (!user) {
+      return null; 
+  }
+
   const handleScanResult = (fileName, result) => {
     setResults((prev) => [...prev, { fileName, result }]);
   };
