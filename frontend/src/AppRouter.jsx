@@ -21,7 +21,6 @@ const HomePage = React.lazy(() => import("./pages/Home"));
 const GetEarlyAccess = React.lazy(() => import("./pages/GetEarlyAccess"));
 const PricingPage = React.lazy(() => import("./pages/PricingPage"));
 const CheckoutSuccess = React.lazy(() => import("./pages/CheckoutSuccess"));
-
 const stripePromise = loadStripe(process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY);
 
 // function LoadingScreen() {
