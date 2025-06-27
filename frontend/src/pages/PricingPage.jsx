@@ -13,13 +13,31 @@ const PricingPage = () => {
   const proBusinessURL = process.env.REACT_APP_PRO_BUSINESS_URL;
   const freePlanURL = process.env.REACT_APP_FREE_PLAN_URL;
 
-  const handleSubscription = (url) => {
+  const handleSubscription = (url, isFree = false) => {
     if (!user) {
       navigate('/login');
       return;
     }
-    window.location.href = url;
+    if (isFree) {
+      fetch(`${process.env.REACT_APP_API_URL}/billing/activate_free_plan`, {
+        method: "POST",
+        credentials: "include"
+      })
+      .then(res => {
+        if (res.ok) {
+          navigate('/scan');
+        } else {
+          console.error("Failed to activate free plan");
+        }
+      })
+      .catch(err => {
+        console.error("Free plan error:", err);
+      });
+    } else {
+      window.location.href = url;
+    }
   };
+
 
   return (
     <div className="max-w-7xl mx-auto p-8">
@@ -38,7 +56,7 @@ const PricingPage = () => {
             <li>✔ No credit card required</li>
           </ul>
           <button 
-            onClick={() => handleSubscription(freePlanURL)} 
+            onClick={() => handleSubscription(freePlanURL, true)} 
             className="btn btn-primary w-full"
           >
             Choose Plan

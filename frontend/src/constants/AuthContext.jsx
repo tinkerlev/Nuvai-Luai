@@ -1,9 +1,9 @@
 // AuthContext.jsx
-import React, { createContext, useState, useEffect, useContext } from "react";
+import React, { createContext, useState, useContext } from "react";
 export const AuthContext = createContext(undefined);
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
-  const [checkingAuth, setCheckingAuth] = useState(true);
+  const [checkingAuth, setCheckingAuth] = useState(false);
   const [authError, setAuthError] = useState(null);
 
   const fetchAuthStatus = async () => {
@@ -32,9 +32,9 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  useEffect(() => {
-    fetchAuthStatus();
-  }, []);
+  // useEffect(() => {
+  //   fetchAuthStatus();
+  // }, []);
   
 
   const logout = async () => {

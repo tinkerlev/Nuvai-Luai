@@ -3,13 +3,13 @@
 import os
 import jwt
 import datetime
+import uuid
 from jwt import ExpiredSignatureError, InvalidTokenError
 from dotenv import load_dotenv
 from src.nuvai.utils.logger import get_logger
 
 load_dotenv()
 logger = get_logger(__name__)
-
 JWT_SECRET = os.getenv("NUVAI_SECRET")
 JWT_ALGORITHM = "HS256"
 JWT_EXPIRATION_HOURS = int(os.getenv("JWT_EXPIRATION_HOURS", 2))
@@ -17,12 +17,11 @@ JWT_EXPIRATION_HOURS = int(os.getenv("JWT_EXPIRATION_HOURS", 2))
 if not JWT_SECRET:
     raise RuntimeError("❌ JWT_SECRET is not set in environment variables.")
 
-def generate_jwt(user_id: int, email: str, custom_claims: dict = None) -> str:
-    """
-    Generates a secure JWT token with standard and optional custom claims.
-    """
+def generate_jwt(user_id: int, email: str, custom_claims: dict = None) -> tuple[str, str]:
     try:
+        jti = str(uuid.uuid4())
         payload = {
+            "jti": jti,
             "iss": "luai-auth",
             "aud": "luai-client",
             "sub": email,
@@ -32,10 +31,10 @@ def generate_jwt(user_id: int, email: str, custom_claims: dict = None) -> str:
         }
 
         if custom_claims and isinstance(custom_claims, dict):
-            payload.update(custom_claims)
+            payload.update({k: v for k, v in custom_claims.items() if k != "jti"})
 
         token = jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGORITHM)
-        return token
+        return token, jti
 
     except Exception as e:
         logger.exception("Failed to generate JWT")
@@ -91,3 +90,11 @@ def verify_invite_token(token: str) -> str:
         raise ValueError("Invite token expired.")
     except jwt.InvalidTokenError:
         raise ValueError("Invalid invite token.")
+
+def store_jti_in_redis(jti: str, expiration_hours: int = JWT_EXPIRATION_HOURS):
+    """
+    Stores the JWT ID (jti) in Redis to mark it as active.
+    """
+    from redis import Redis
+    redis_client = Redis.from_url(os.getenv("REDIS_URL", "redis://localhost:6379/0"))
+    redis_client.set(f"active:{jti}", "1", ex=datetime.timedelta(hours=expiration_hours))

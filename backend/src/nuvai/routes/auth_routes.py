@@ -5,7 +5,9 @@ import secrets
 import base64
 import json
 import traceback
-
+from uuid import uuid4
+from datetime import timedelta
+from src.nuvai.utils.token_utils import store_jti_in_redis
 from flask import session, Blueprint, request, jsonify, url_for, make_response, redirect, abort
 from authlib.integrations.flask_client import OAuth
 from jwt import InvalidTokenError
@@ -16,7 +18,7 @@ from src.nuvai.utils.logger import get_logger
 from src.nuvai.utils.sanitize import sanitize_email, sanitize_text, sanitize_name
 from src.nuvai.models.user import User
 from src.nuvai.utils.token_utils import generate_jwt
-from flask_jwt_extended import jwt_required, get_jwt_identity
+from flask_jwt_extended import jwt_required, get_jwt_identity, get_jwt
 
 auth_blueprint = Blueprint("auth", __name__)
 logger = get_logger(__name__)
@@ -97,7 +99,9 @@ def callback_provider(provider):
             if not user.logo_path or user.logo_path.startswith("http"):
                 user.logo_path = logo_url
                 user.save()
-        jwt_token = generate_jwt(user.id, user.email)
+        jti = str(uuid4())
+        jwt_token, jti = generate_jwt(user.id, user.email)
+        store_jti_in_redis(jti)
         if not return_to_path.startswith('/'): return_to_path = '/scan'
         final_redirect_url = f"{base_frontend_url.rstrip('/')}{return_to_path}"
         resp = make_response(redirect(final_redirect_url))
@@ -132,7 +136,8 @@ def register():
         )
         new_user.set_password(password)
         new_user.save()
-        jwt_token = generate_jwt(new_user.id, new_user.email)
+        jwt_token, jti = generate_jwt(new_user.id, new_user.email)
+        store_jti_in_redis(jti)
         response = jsonify(message="User registered", user={"id": new_user.id, "email": new_user.email})
         response.set_cookie("luai.jwt", jwt_token, httponly=True, secure=(os.getenv("NUVAI_ENV")=="production"), samesite="Lax", path="/")
         return response, 201
@@ -148,7 +153,8 @@ def login():
         email, password = sanitize_email(data.get("email", "")), data.get("password", "")
         user = User.get_by_email(email)
         if not user or not user.check_password(password): return jsonify(message="Invalid credentials"), 401
-        jwt_token = generate_jwt(user.id, user.email)
+        jwt_token, jti = generate_jwt(user.id, user.email)
+        store_jti_in_redis(jti)
         response = jsonify(message="Login successful", user={"id": user.id, "email": user.email})
         response.set_cookie("luai.jwt", jwt_token, httponly=True, secure=(os.getenv("NUVAI_ENV") == "production"), samesite="Lax", path="/")
         return response
@@ -160,6 +166,19 @@ def login():
 @jwt_required()
 def get_user_info():
     current_user_email = get_jwt_identity()
+    jti = get_jwt()["jti"]
+    print(f"[DEBUG] JWT Identity: {current_user_email}")
+    print(f"[DEBUG] JTI: {jti}")
+    print(f"[DEBUG] Redis revoked? {redis_client.get(f'revoked:{jti}')}")
+    print(f"[DEBUG] Redis active? {redis_client.get(f'active:{jti}')}")
+    if redis_client.get(f"revoked:{jti}"):
+        response = jsonify({"msg": "Token invalidated"})
+        response.delete_cookie("luai.jwt")
+        return response, 401
+    if not redis_client.get(f"active:{jti}"):
+        response = jsonify({"msg": "Session expired"})
+        response.delete_cookie("luai.jwt")
+        return response, 401
     user = User.get_by_email(current_user_email)
     if not user: return jsonify(msg="User not found"), 404
     logo_url = user.get_logo_url()

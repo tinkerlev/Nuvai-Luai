@@ -4,11 +4,10 @@ import { useTheme } from "../hook/useTheme";
 import { jwtDecode } from "jwt-decode";
 import { AuthContext } from "../contexts/AuthContext";
 
-// Utility to safely decode JWT and check expiration
 const isTokenValid = (token) => {
   try {
     const { exp } = jwtDecode(token);
-    return exp * 1000 > Date.now(); // Convert to milliseconds
+    return exp * 1000 > Date.now();
   } catch (err) {
     console.warn("⚠️ Invalid JWT structure");
     return false;
@@ -18,11 +17,10 @@ const isTokenValid = (token) => {
 export default function useAuth(requireAuth = false) {
   const { user, setUser, checkingAuth } = useContext(AuthContext);
   const [authError, setAuthError] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { theme } = useTheme();
 
-  // Fetch user and validate token (silent check)
   const verifyAuth = async () => {
     setLoading(true);
     try {
@@ -53,11 +51,10 @@ export default function useAuth(requireAuth = false) {
     }
   };
 
-  useEffect(() => {
-    verifyAuth();
-  }, []);
+  // useEffect(() => {
+  //   verifyAuth();
+  // }, []);
 
-  // Helper: get cookie securely
   const getCookie = (name) => {
     const value = `; ${document.cookie}`;
     const parts = value.split(`; ${name}=`);
