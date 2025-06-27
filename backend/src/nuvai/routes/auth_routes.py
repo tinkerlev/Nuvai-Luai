@@ -22,26 +22,6 @@ from flask_jwt_extended import jwt_required, get_jwt_identity, get_jwt
 auth_blueprint = Blueprint("auth", __name__)
 logger = get_logger(__name__)
 oauth = OAuth()
-# redis_client = Redis.from_url(os.getenv("REDIS_URL", "redis://localhost:6379/0"))
-
-# ALLOWED_PROVIDERS = {
-#     "google": {
-#         "client_id": os.getenv("GOOGLE_CLIENT_ID"),
-#         "client_secret": os.getenv("GOOGLE_CLIENT_SECRET"),
-#         "server_metadata_url": "https://accounts.google.com/.well-known/openid-configuration",
-#         "client_kwargs": {"scope": "openid profile email"}
-#     },
-#     "github": {
-#         "client_id": os.getenv("GITHUB_CLIENT_ID"),
-#         "client_secret": os.getenv("GITHUB_CLIENT_SECRET"),
-#         "api_base_url": "https://api.github.com/",
-#         "access_token_url": "https://github.com/login/oauth/access_token",
-#         "authorize_url": "https://github.com/login/oauth/authorize",
-#         "client_kwargs": {"scope": "read:user user:email"}
-#     },
-# }
-# for name, config in ALLOWED_PROVIDERS.items():
-#     oauth.register(name=name, **config)
 
 @auth_blueprint.route("/callback/<provider>")
 def callback_provider(provider):
@@ -93,8 +73,20 @@ def callback_provider(provider):
         jwt_token, jti = generate_jwt(user.id, user.email)
         store_jti_in_redis(jti)
         logger.info("Session stored successfully. Preparing final redirect...")
-        if not return_to_path.startswith('/'): return_to_path = '/scan'
-        final_redirect_url = f"{base_frontend_url.rstrip('/')}{return_to_path}"
+        user_has_subscription = False
+        if hasattr(user, 'has_active_subscription'):
+            user_has_subscription = user.has_active_subscription()
+        else:
+            logger.warning("Method 'has_active_subscription' not found on User model. Using direct plan check")
+            if user.plan and user.plan.lower() not in ['free', None, '']:
+                user_has_subscription = True
+        if user_has_subscription or (user.plan and user.plan.lower() == 'free'):
+            logger.info(f"User '{user.email}' has an active/free plan. Redirecting to /scan")
+            final_redirect_url = f"{base_frontend_url.rstrip('/')}/scan"
+        else:
+            final_redirect_url = f"{base_frontend_url.rstrip('/')}/pricing"
+
+        logger.info(f"Final redirect URL determined: {final_redirect_url}")
         resp = make_response(redirect(final_redirect_url))
         resp.set_cookie("luai.jwt", jwt_token, httponly=True, secure=(os.getenv("NUVAI_ENV")=="production"), samesite="Lax", path="/")
         logger.info(f"--- OAuth Callback for {provider_name} COMPLETED ---")
@@ -122,7 +114,7 @@ def login_provider(provider):
     client = oauth.create_client(provider_name)
     logger.info(f"Redirecting user to {provider_name}...")
     return client.authorize_redirect(redirect_uri)
-    
+
 @auth_blueprint.route("/logout", methods=["POST"])
 def logout():
     response = jsonify({"message": "Logged out successfully"})
