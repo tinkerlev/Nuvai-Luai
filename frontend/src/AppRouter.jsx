@@ -20,20 +20,8 @@ const GetEarlyAccess = React.lazy(() => import("./pages/GetEarlyAccess"));
 const PricingPage = React.lazy(() => import("./pages/PricingPage"));
 const CheckoutSuccess = React.lazy(() => import("./pages/CheckoutSuccess"));
 
-
-// function LoadingScreen() {
-//   return (
-//     <div className="min-h-screen flex items-center justify-center">
-//       <div className="animate-pulse text-sm text-gray-500">
-//         🔄 Validating session...
-//       </div>
-//     </div>
-//   );
-// }
-
 function AppContent() {
   const { user } = useAuth();
-  // if (checkingAuth) return <LoadingScreen />;
 
   return (
     <div className="flex flex-col min-h-screen">
