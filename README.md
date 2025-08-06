@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="./assets/Logo-Luai-tr.svg" alt="Luai Logo" height="80" />
+<img src="./assets/Logo-Luai-tr.svg" alt="Luai Logo" height="80" />
 
 # Luai – AI-Powered Secure Code Scanner
 
@@ -98,7 +98,7 @@ Code uploaded via drag-and-drop or API
 
 ## 🧪 Live Demo & Playground
 
-Try Luai now at: [https://play.luai.io](https://play.luai.io) *(coming soon)*
+Try Luai now at: [https://luai.io](https://luai.io) *(coming soon)*
 
 Use our sandbox to:
 
