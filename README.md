@@ -5,7 +5,6 @@
 
 **Modern. Secure. AI-Aware.**
 
-[![CI](https://github.com/tinkerlev/nuvai/actions/workflows/ci.yml/badge.svg)](https://github.com/tinkerlev/nuvai/actions)
 [![Security](https://img.shields.io/badge/security-zero_exec-green)](https://owasp.org)
 [![Built with Flask](https://img.shields.io/badge/backend-Flask-blue)](https://flask.palletsprojects.com/)
 [![Frontend](https://img.shields.io/badge/frontend-React%20%7C%20Tailwind-blue)](https://reactjs.org/)
